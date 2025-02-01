@@ -31,7 +31,7 @@ class DateTimeEncoder(json.JSONEncoder):
         return super(DateTimeEncoder, self).default(obj)
 
 app = Flask(__name__, static_folder='static', static_url_path='')
-CORS(app)
+CORS(app)  # Разрешаем CORS для всех маршрутов
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')  # Используем переменную окружения
 
 @app.route('/')
@@ -41,10 +41,13 @@ def index():
 @app.route('/authorize')
 def authorize():
     flow = InstalledAppFlow.from_client_secrets_file(
-        'credentials.json', SCOPES, redirect_uri=url_for('oauth2callback', _external=True, _scheme='https'))
+        'credentials.json', SCOPES, 
+        redirect_uri="https://harmonysync.ru/oauth2callback"  # Укажите полный URL вашего домена
+    )
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true')
+        include_granted_scopes='true'
+    )
     session['state'] = state
     return redirect(authorization_url)
 
@@ -52,7 +55,10 @@ def authorize():
 def oauth2callback():
     state = session['state']
     flow = InstalledAppFlow.from_client_secrets_file(
-        'credentials.json', SCOPES, state=state, redirect_uri=url_for('oauth2callback', _external=True, _scheme='https'))
+        'credentials.json', SCOPES, 
+        state=state, 
+        redirect_uri="https://harmonysync.ru/oauth2callback"  # Укажите полный URL вашего домена
+    )
     flow.fetch_token(authorization_response=request.url)
     creds = flow.credentials
     save_credentials(creds)
@@ -122,7 +128,7 @@ def get_calendar_events():
     now = saratov_tz.localize(datetime.now() - timedelta(days=1)).isoformat()
     future = saratov_tz.localize(datetime.now() + timedelta(days=30)).isoformat()
     
-    events_result = service.events().list(calendarId='primary', timeMin=now, timeMax=future,  maxResults=10, singleEvents=True, orderBy='startTime').execute()
+    events_result = service.events().list(calendarId='primary', timeMin=now, timeMax=future, maxResults=10, singleEvents=True, orderBy='startTime').execute()
     events = events_result.get('items', [])
     
     # Преобразование времени в часовом поясе Саратова
@@ -144,4 +150,4 @@ def get_calendar_events():
     return json.dumps(events, cls=DateTimeEncoder), 200, {'Content-Type': 'application/json'}
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)

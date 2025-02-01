@@ -28,4 +28,4 @@ COPY backend/ .
 COPY --from=frontend-builder /app/frontend/dist /app/backend/static
 
 # Настройка Gunicorn для обслуживания фронтенда и бэкенда
-CMD ["gunicorn", "--bind", "79.174.84.178:5000", "--chdir", "/app/backend", "app:app", "--timeout", "120"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--chdir", "/app/backend", "app:app", "--timeout", "120"]
