@@ -21,7 +21,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копирование файлов бэкенда
-COPY backend/token.json .
+# COPY backend/token.json .
 COPY backend/ .
 
 # Копирование собранного фронтенда

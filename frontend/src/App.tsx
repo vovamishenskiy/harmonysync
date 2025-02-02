@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// src/App.tsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';
@@ -5,54 +7,53 @@ import CalendarEvents from './components/CalendarEvents';
 import './index.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await axios.get('/api/tasks');
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Not authenticated:', error);
-        setIsAuthenticated(false);
-      }
-    };
+    useEffect(() => {
+        // Проверяем, есть ли доступ к API (токен OAuth)
+        const checkAuth = async () => {
+            try {
+                const response = await axios.get('/api/tasks');
+                setIsAuthenticated(true); // Если запрос успешен, пользователь авторизован
+            } catch (error) {
+                console.error('Not authenticated:', error);
+                setIsAuthenticated(false); // Если запрос завершился ошибкой, пользователь не авторизован
+            }
+        };
 
-    checkAuth();
-  }, []);
+        checkAuth();
+    }, []);
 
-  const handleLogout = () => {
-    window.location.href = '/api/logout';
-  };
+    // Если пользователь не авторизован, показываем страницу входа
+    if (!isAuthenticated) {
+        return (
+            <div className="App">
+                <h1>HarmonySync</h1>
+                <p>Для доступа к приложению выполните авторизацию через Google.</p>
+                <a href="/login" className="login-button">
+                    Войти через Google
+                </a>
+            </div>
+        );
+    }
 
-  if (!isAuthenticated) {
+    // Если пользователь авторизован, показываем интерфейс
     return (
-      <div className="App">
-        <h1>HarmonySync</h1>
-        <p>Для доступа к приложению выполните авторизацию через Google.</p>
-        <a href="/api/login" className="login-button">
-          Войти через Google
-        </a>
-      </div>
+        <div className="App">
+            <h1>HarmonySync</h1>
+            <button onClick={() => window.location.href = '/logout'} className="logout-button">
+                Выйти
+            </button>
+            <div className="container">
+                <div>
+                    <TasksList />
+                </div>
+                <div>
+                    <CalendarEvents />
+                </div>
+            </div>
+        </div>
     );
-  }
-
-  return (
-    <div className="App">
-      <h1>HarmonySync</h1>
-      <button onClick={handleLogout} className="logout-button">
-        Выйти
-      </button>
-      <div className="container">
-        <div>
-          <TasksList />
-        </div>
-        <div>
-          <CalendarEvents />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default App;
