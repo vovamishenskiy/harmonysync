@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /var/www/harmonysync/frontend
 
 COPY package.json package-lock.json ./
 RUN npm install

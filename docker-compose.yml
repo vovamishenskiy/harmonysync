@@ -6,7 +6,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./backend:/app/backend  # Для горячей перезагрузки кода
+      - ./backend:/var/www/harmonysync/backend  # Для горячей перезагрузки кода
     environment:
       FLASK_SECRET_KEY: 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
     networks:
@@ -19,7 +19,7 @@ services:
     ports:
       - "4173:4173"
     volumes:
-      - ./frontend:/app/frontend  # Для горячей перезагрузки кода
+      - ./frontend:/var/www/harmonysync/frontend  # Для горячей перезагрузки кода
     environment:
       VITE_API_URL: http://backend:5000  # Указываем URL бэкенда внутри сети Docker
     depends_on:

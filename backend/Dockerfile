@@ -1,8 +1,8 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /var/www/harmonysync/backend
 
-COPY token.json token.json
+# COPY token.json token.json
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
