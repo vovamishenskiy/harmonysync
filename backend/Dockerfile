@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /var/www/harmonysync/backend
+WORKDIR /app/backend
 
 # COPY token.json token.json
 COPY requirements.txt requirements.txt
