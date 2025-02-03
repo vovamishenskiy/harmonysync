@@ -58,10 +58,15 @@ const CalendarEvents: React.FC = () => {
       <div className="calendar-grid">
         {daysInMonth.map((day) => {
           const dayKey = `${day.getDate()}-${day.getMonth()}-${day.getFullYear()}`;
+          const isToday =
+            day.getDate() === today.getDate() &&
+            day.getMonth() === today.getMonth() &&
+            day.getFullYear() === today.getFullYear();
           return (
             <div
               key={dayKey}
-              className={`calendar-day ${eventDays[dayKey] ? 'has-event' : ''}`}
+              className={`calendar-day ${isToday ? 'current-day' : ''
+                } ${eventDays[dayKey] ? 'has-event' : ''}`}
             >
               {day.getDate()}
             </div>
