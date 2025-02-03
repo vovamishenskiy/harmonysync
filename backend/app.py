@@ -39,12 +39,18 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'  # Путь к SQLite БД
 db = SQLAlchemy(app)
 
+# Модель списка задач
+class TaskList(db.Model):
+    id = db.Column(db.String(50), primary_key=True)  # Уникальный ID списка
+    title = db.Column(db.String(200), nullable=False)  # Название списка
+
 # Модель задачи
 class Task(db.Model):
-    id = db.Column(db.String(50), primary_key=True)          # Уникальный ID задачи
-    title = db.Column(db.String(200), nullable=False)        # Название задачи
-    due = db.Column(db.DateTime, nullable=True)              # Время выполнения
-    status = db.Column(db.String(20), default='pending')     # Статус задачи (pending, completed)
+    id = db.Column(db.String(50), primary_key=True)  # Уникальный ID задачи
+    title = db.Column(db.String(200), nullable=False)  # Название задачи
+    due = db.Column(db.DateTime, nullable=True)  # Время выполнения
+    status = db.Column(db.String(20), default='pending')  # Статус задачи (pending, completed)
+    list_id = db.Column(db.String(50), db.ForeignKey('task_list.id'), nullable=False)  # ID списка задач
 
 # Декоратор для проверки авторизации пользователя
 def login_required(f):
@@ -150,19 +156,28 @@ def get_calendar_events():
         logger.error(f"Error fetching calendar events: {e}")
         return jsonify({'error': 'Failed to fetch calendar events', 'details': str(e)}), 500
 
+@app.route('/api/tasklists', methods=['GET'])
+@login_required
+def get_tasklists():
+    tasklists = TaskList.query.all()
+    result = [{'id': tl.id, 'title': tl.title} for tl in tasklists]
+    return jsonify(result), 200
+
 # Маршрут для получения задач
 @app.route('/api/tasks', methods=['GET'])
 @login_required
 def get_tasks():
-    tasks = Task.query.all()
-    result = []
-    for task in tasks:
-        result.append({
-            'id': task.id,
-            'title': task.title,
-            'due': task.due.isoformat() if task.due else None,
-            'status': task.status
-        })
+    list_id = request.args.get('list_id')
+    if not list_id:
+        return jsonify({'error': 'Missing list_id parameter'}), 400
+
+    tasks = Task.query.filter_by(list_id=list_id).all()
+    result = [{
+        'id': task.id,
+        'title': task.title,
+        'due': task.due.isoformat() if task.due else None,
+        'status': task.status
+    } for task in tasks]
     return jsonify(result), 200
 
 # Маршрут для создания задачи
@@ -173,13 +188,17 @@ def create_task():
     title = data.get('title')
     due_date = data.get('due')  # Дата в формате ISO (например, "2025-02-03")
     due_time = data.get('time')  # Время в формате "HH:mm"
+    list_id = data.get('list_id')
+
+    if not list_id:
+        return jsonify({'error': 'Missing list_id parameter'}), 400
 
     due_datetime = None
     if due_date and due_time:
         due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
         due_datetime = saratov_tz.localize(due_datetime)
 
-    task = Task(id=str(uuid.uuid4()), title=title, due=due_datetime)
+    task = Task(id=str(uuid.uuid4()), title=title, due=due_datetime, list_id=list_id)
     db.session.add(task)
     db.session.commit()
     return jsonify({'message': 'Task created successfully', 'task': task.id}), 201
@@ -198,4 +217,15 @@ def delete_task(task_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        
+        if not TaskList.query.filter_by(title="Мои задачи").first():
+            my_tasks_list = TaskList(id=str(uuid.uuid4()), title="Мои задачи")
+            db.session.add(my_tasks_list)
+
+        if not TaskList.query.filter_by(title="💸").first():
+            money_tasks_list = TaskList(id=str(uuid.uuid4()), title="💸")
+            db.session.add(money_tasks_list)
+
+        db.session.commit()
+        
     app.run(host='0.0.0.0', port=5000)
