@@ -55,6 +55,8 @@ const CalendarEvents: React.FC = () => {
   ];
 
   const eventDays = events.reduce((acc: Record<string, boolean>, event) => {
+    event.start.dateTime = event.start.dateTime.split(18, 20);
+    event.start.date = event.start.date.split(18, 20);
     const date = new Date(event.start.dateTime || event.start.date);
     const dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
     acc[dayKey] = true;

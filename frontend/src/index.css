@@ -34,37 +34,78 @@ body {
 
 .tasklist-dropdown {
   margin-bottom: 20px;
+  width: fit-content;
+  position: relative;
+  margin-top: 16px;
+}
+
+.tasklist-dropdown::before {
+  position: absolute;
+  content: 'список задач';
+  font-size: 10.25px;
+  left: 6px;
+  top: -12px;
+  color: #666;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .tasklist-dropdown select {
-  width: 100%;
-  padding: 10px;
+  width: auto;
+  padding: 6px;
   font-size: 16px;
+  background: none;
+  border-radius: 16px;
+  border: 0;
+  cursor: pointer;
 }
 
 .add-task {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  box-shadow: 0 4px 8px #0000001a;
+  border-radius: 12px;
+  padding: 6px;
 }
 
 .add-task input {
-  flex: 1;
-  padding: 10px;
   font-size: 16px;
+  width: 100%;
+  outline: none;
+  border-radius: 12px;
+  border: 0;
+  padding-left: 12px;
 }
 
 .add-task button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
+  background: none;
   border: none;
+  width: 32px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   cursor: pointer;
+  transition: 0.3s ease all;
+}
+
+.add-task button::before {
+  position: absolute;
+  content: '';
+  height: calc(100% - 3px);
+  left: -10px;
+  display: block;
+  border: 1px solid #afafaf;
+  border-radius: 12px;
 }
 
 .add-task button:hover {
-  background-color: #0056b3;
+  box-shadow: 0 4px 8px #0000001a;
+  border-radius: 6px;
+  transition: 0.3s ease all;
 }
 
 .tasks-list {
