@@ -102,6 +102,10 @@ body {
   border-radius: 12px;
 }
 
+.add-task button svg {
+  fill: #00f;
+}
+
 .add-task button:hover {
   box-shadow: 0 4px 8px #0000001a;
   border-radius: 6px;
@@ -157,6 +161,7 @@ body {
 .task-delete-button svg {
   width: 24px;
   height: 24px;
+  stroke: #666;
 }
 
 .task-delete-button:hover {
