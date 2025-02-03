@@ -42,9 +42,19 @@ const CalendarEvents: React.FC = () => {
     return acc;
   }, {});
 
+  const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
   return (
     <div className="calendar-section">
       {/* <h2 className="calendar-header">Calendar</h2> */}
+      <div className="calendar-weekdays">
+        {weekdays.map((day) => (
+          <div key={day} className="calendar-weekday">
+            {day}
+          </div>
+        ))}
+      </div>
+
       <div className="calendar-grid">
         {daysInMonth.map((day) => {
           const dayKey = `${day.getDate()}-${day.getMonth()}-${day.getFullYear()}`;
