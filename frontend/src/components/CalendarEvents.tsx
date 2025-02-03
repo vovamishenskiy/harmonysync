@@ -44,7 +44,7 @@ const CalendarEvents: React.FC = () => {
 
   return (
     <div className="calendar-section">
-      <h2 className="calendar-header">Calendar</h2>
+      {/* <h2 className="calendar-header">Calendar</h2> */}
       <div className="calendar-grid">
         {daysInMonth.map((day) => {
           const dayKey = `${day.getDate()}-${day.getMonth()}-${day.getFullYear()}`;
@@ -59,7 +59,7 @@ const CalendarEvents: React.FC = () => {
         })}
       </div>
 
-      <h3>Events in Current Month</h3>
+      {/* <h3>Events in Current Month</h3> */}
       <ul className="calendar-events-list">
         {Array.isArray(currentMonthEvents) && currentMonthEvents.length > 0 ? (
           currentMonthEvents.map((event) => (

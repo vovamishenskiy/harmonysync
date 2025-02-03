@@ -45,12 +45,8 @@ function App() {
         Выйти
       </button>
       <div className="container">
-        <div>
-          <TasksList />
-        </div>
-        <div>
-          <CalendarEvents />
-        </div>
+        <TasksList />
+        <CalendarEvents />
       </div>
     </div>
   );
