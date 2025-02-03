@@ -41,3 +41,13 @@ export const fetchCalendarEvents = async () => {
         throw error;
     }
 };
+
+export const createTask = async (tasklistId: string, taskData: { title: string; dueTime?: string }) => {
+    try {
+        const response = await axios.post(`/api/tasks/${tasklistId}/tasks`, taskData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating task:', error);
+        throw error;
+    }
+};
