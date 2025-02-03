@@ -41,7 +41,7 @@ function App() {
   return (
     <div className="App">
       <h1>HarmonySync</h1>
-      <button onClick={() => window.location.href = '/logout'} className="logout-button">
+      <button onClick={() => window.location.href = '/api/logout'} className="logout-button">
         Выйти
       </button>
       <div className="container">

@@ -1,12 +1,8 @@
+version: '3.8'
+
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./backend:/var/www/harmonysync/backend  # Для горячей перезагрузки кода
+    image: oteslifar/harmonysync-app:latest
     environment:
       FLASK_SECRET_KEY: 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
     networks:
@@ -14,19 +10,31 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.nginx
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:latest
     ports:
-      - "4173:4173"
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./frontend:/var/www/harmonysync/frontend  # Для горячей перезагрузки кода
-    environment:
-      VITE_API_URL: http://backend:5000  # Указываем URL бэкенда внутри сети Docker
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./frontend/dist:/usr/share/caddy/html
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - backend
+      - frontend
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
