@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { fetchCalendarEvents } from '../api/api';
 
@@ -27,14 +26,34 @@ const CalendarEvents: React.FC = () => {
     loadEvents();
   }, []);
 
-  // Генерация дней месяца
   const today = new Date();
+
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   const daysInMonth = Array.from(
-    { length: new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() },
+    { length: lastDayOfMonth.getDate() },
     (_, i) => new Date(today.getFullYear(), today.getMonth(), i + 1)
   );
 
-  // Определение дней с событиями
+  const getWeekdayIndex = (date: Date) => {
+    const dayIndex = date.getDay();
+    return dayIndex === 0 ? 6 : dayIndex - 1;
+  };
+
+  const startDayOfWeek = getWeekdayIndex(firstDayOfMonth);
+  const prevMonthDays = [];
+  if (startDayOfWeek !== 0) {
+    const prevMonthLastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+    for (let i = startDayOfWeek; i > 0; i--) {
+      prevMonthDays.push(new Date(prevMonthLastDay.getFullYear(), prevMonthLastDay.getMonth(), prevMonthLastDay.getDate() - i + 1));
+    }
+  }
+
+  const calendarDays = [
+    ...prevMonthDays.map((day) => ({ date: day, isCurrentMonth: false })),
+    ...daysInMonth.map((day) => ({ date: day, isCurrentMonth: true })),
+  ];
+
   const eventDays = events.reduce((acc: Record<string, boolean>, event) => {
     const date = new Date(event.start.dateTime || event.start.date);
     const dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
@@ -46,7 +65,6 @@ const CalendarEvents: React.FC = () => {
 
   return (
     <div className="calendar-section">
-      {/* <h2 className="calendar-header">Calendar</h2> */}
       <div className="calendar-weekdays">
         {weekdays.map((day) => (
           <div key={day} className="calendar-weekday">
@@ -56,25 +74,25 @@ const CalendarEvents: React.FC = () => {
       </div>
 
       <div className="calendar-grid">
-        {daysInMonth.map((day) => {
-          const dayKey = `${day.getDate()}-${day.getMonth()}-${day.getFullYear()}`;
+        {calendarDays.map(({ date, isCurrentMonth }) => {
+          const dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
           const isToday =
-            day.getDate() === today.getDate() &&
-            day.getMonth() === today.getMonth() &&
-            day.getFullYear() === today.getFullYear();
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+
           return (
             <div
               key={dayKey}
-              className={`calendar-day ${isToday ? 'current-day' : ''
-                } ${eventDays[dayKey] ? 'has-event' : ''}`}
+              className={`calendar-day ${!isCurrentMonth ? 'prev-month-day' : ''
+                } ${isToday ? 'current-day' : ''} ${eventDays[dayKey] ? 'has-event' : ''}`}
             >
-              {day.getDate()}
+              {date.getDate()}
             </div>
           );
         })}
       </div>
 
-      {/* <h3>Events in Current Month</h3> */}
       <ul className="calendar-events-list">
         {Array.isArray(currentMonthEvents) && currentMonthEvents.length > 0 ? (
           currentMonthEvents.map((event) => (
