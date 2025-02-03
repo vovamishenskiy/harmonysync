@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import pytz
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from uuid import uuid4
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
