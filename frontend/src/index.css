@@ -52,7 +52,7 @@ body {
 }
 
 .tasklist-dropdown select {
-  width: auto;
+  width: 120px;
   padding: 6px;
   font-size: 16px;
   background: none;
