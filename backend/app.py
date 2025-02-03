@@ -118,23 +118,6 @@ def oauth2callback():
         logger.error(f"Error processing OAuth callback: {e}")
         return f"Error processing OAuth callback: {e}", 500
 
-@app.route('/api/calendar/create-task-calendar')
-@login_required
-def create_task_calendar():
-    creds = get_credentials()
-    service = build('calendar', 'v3', credentials=creds)
-    try:
-        calendar = {
-            'summary': 'Task Calendar',
-            'timeZone': 'Europe/Saratov'
-        }
-        created_calendar = service.calendars().insert(body=calendar).execute()
-        logger.info(f"Created task calendar: {created_calendar['id']}")
-        return jsonify(created_calendar, created_calendar['id']), 201
-    except Exception as e:
-        logger.error(f"Error creating task calendar: {e}")
-        return jsonify({'error': 'Failed to create task calendar', 'details': str(e)}), 500
-
 # Маршрут для выхода
 @app.route('/api/logout')
 def logout():
@@ -186,7 +169,7 @@ def get_tasks(tasklist_id):
     try:
         # Получаем события из календаря
         calendar_service = build('calendar', 'v3', credentials=creds)
-        calendar_id = 'your-task-calendar-id'  # ID вашего календаря для задач
+        calendar_id = '2159519770c7976e4a200029afe73aa0468b03ed989c2757224189259e21c299@group.calendar.google.com'
         now = saratov_tz.localize(datetime.now()).isoformat()
         events_result = calendar_service.events().list(
             calendarId=calendar_id,
