@@ -6,4 +6,5 @@ google-auth-oauthlib
 werkzeug==2.0.3
 pytz
 flask-cors
-Flask-SQLAlchemy
+Flask-SQLAlchemy==3.0.5
+SQLAlchemy==1.4.49
