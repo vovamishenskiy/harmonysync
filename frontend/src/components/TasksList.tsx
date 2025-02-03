@@ -15,6 +15,10 @@ const TasksList: React.FC = () => {
         const data = await fetchTaskLists();
         if (Array.isArray(data)) {
           setTasklists(data);
+
+          if (data.length > 0) {
+            setSelectedTasklistId(data[0].id);
+          }
         } else {
           console.error('Invalid data format for task lists:', data);
           setTasklists([]);
@@ -26,6 +30,12 @@ const TasksList: React.FC = () => {
     };
     loadTaskLists();
   }, []);
+
+  useEffect(() => {
+    if (selectedTasklistId) {
+      handleTasklistSelect(selectedTasklistId);
+    }
+  }, [selectedTasklistId]);
 
   const handleTasklistSelect = async (id: string) => {
     setSelectedTasklistId(id);
@@ -74,7 +84,6 @@ const TasksList: React.FC = () => {
 
   return (
     <div className="tasks-section">
-      {/* Дропдаун для выбора списка задач */}
       <div className="tasklist-dropdown">
         <select
           value={selectedTasklistId || ''}
@@ -89,12 +98,10 @@ const TasksList: React.FC = () => {
         </select>
       </div>
 
-      {/* Отображение задач */}
       {selectedTasklistId && (
         <div>
-          <h3>Tasks in "{tasklists.find((tl) => tl.id === selectedTasklistId)?.title}"</h3>
+          <h3>{tasklists.find((tl) => tl.id === selectedTasklistId)?.title}</h3>
 
-          {/* Кнопка добавления задачи */}
           <div className="add-task">
             <input
               type="text"
@@ -102,41 +109,36 @@ const TasksList: React.FC = () => {
               onChange={(e) => setNewTaskTitle(e.target.value)}
               placeholder="Enter task title"
             />
-            <button onClick={handleAddTask}>Add Task</button>
+            <button onClick={handleAddTask}>Добавить</button>
           </div>
 
-          {/* Список задач */}
           <ul className="tasks-list">
             {tasks.length > 0 ? (
               tasks.map((task) => (
                 <li key={task.id} className="task-item">
-                  {/* Чекбокс выполнения задачи */}
                   <input
                     type="checkbox"
                     checked={task.status === 'completed'}
                     onChange={() => handleCompleteTask(task.id)}
                   />
-                  {/* Название задачи */}
                   <span className={`task-title ${task.status === 'completed' ? 'completed' : ''}`}>
                     {task.title}
                   </span>
-                  {/* Время задачи */}
                   {task.due && (
                     <div className="task-time">
                       {new Date(task.due).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   )}
-                  {/* Кнопка удаления задачи */}
                   <button
                     className="task-delete-button"
                     onClick={() => handleTaskDelete(task.id)}
                   >
-                    Delete
+                    Удалить
                   </button>
                 </li>
               ))
             ) : (
-              <p>No tasks available.</p>
+              <p>Нет задач</p>
             )}
           </ul>
         </div>

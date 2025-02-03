@@ -25,10 +25,11 @@ body {
 
 /* Стили для левого блока (задачи) */
 .tasks-section {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px #0000001a;
+  padding: 16px;
+  background: #fff;
+  width: 100%;
 }
 
 .tasklist-dropdown {
@@ -114,11 +115,11 @@ body {
 
 /* Стили для правого блока (календарь) */
 .calendar-section {
-  flex: 1;
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px #0000001a;
+  padding: 16px;
+  max-width: 340px;
 }
 
 .calendar-header {
