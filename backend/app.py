@@ -117,6 +117,23 @@ def oauth2callback():
         logger.error(f"Error processing OAuth callback: {e}")
         return f"Error processing OAuth callback: {e}", 500
 
+@app.route('/api/calendar/create-task-calendar')
+@login_required
+def create_task_calendar():
+    creds = get_credentials()
+    service = build('calendar', 'v3', credentials=creds)
+    try:
+        calendar = {
+            'summary': 'Task Calendar',
+            'timeZone': 'Europe/Saratov'
+        }
+        created_calendar = service.calendars().insert(body=calendar).execute()
+        logger.info(f"Created task calendar: {created_calendar['id']}")
+        return jsonify(created_calendar, created_calendar['id']), 201
+    except Exception as e:
+        logger.error(f"Error creating task calendar: {e}")
+        return jsonify({'error': 'Failed to create task calendar', 'details': str(e)}), 500
+
 # Маршрут для выхода
 @app.route('/api/logout')
 def logout():
@@ -159,27 +176,87 @@ def get_taskslists():
 @app.route('/api/tasks/<tasklist_id>/tasks')
 @login_required
 def get_tasks(tasklist_id):
+    logger.info(f"Fetching tasks for tasklist ID: {tasklist_id}")
+    creds = get_credentials()
+    if not creds or not creds.valid:
+        logger.warning("User is not authenticated.")
+        return redirect(url_for('login'))
+
     try:
-        logger.info(f"Fetching tasks for tasklist ID: {tasklist_id}")
-        creds = get_credentials()
-        service = build('tasks', 'v1', credentials=creds)
-        tasks_result = service.tasks().list(tasklist=tasklist_id).execute()
-        tasks = tasks_result.get('items', [])
+        # Получаем события из календаря
+        calendar_service = build('calendar', 'v3', credentials=creds)
+        calendar_id = 'your-task-calendar-id'  # ID вашего календаря для задач
+        now = saratov_tz.localize(datetime.now()).isoformat()
+        events_result = calendar_service.events().list(
+            calendarId=calendar_id,
+            timeMin=now,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        events = events_result.get('items', [])
 
-        # Преобразуем даты в часовой пояс Саратова
-        for task in tasks:
-            if 'due' in task and task['due']:
-                due_date = datetime.strptime(task['due'], '%Y-%m-%dT%H:%M:%S.%fZ')
-                task['due'] = saratov_tz.localize(due_date).isoformat()
+        # Преобразуем события в задачи
+        tasks = []
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            end = event['end'].get('dateTime', event['end'].get('date'))
+            task = {
+                'id': event['id'],
+                'title': event['summary'],
+                'due': start,
+                'time': datetime.fromisoformat(start).strftime('%H:%M') if 'T' in start else None,
+            }
+            tasks.append(task)
 
-        logger.info(f"Fetched {len(tasks)} tasks for tasklist ID: {tasklist_id}")
+        logger.info(f"Fetched {len(tasks)} tasks from the calendar.")
         return json.dumps(tasks, cls=DateTimeEncoder), 200, {'Content-Type': 'application/json'}
-    except HttpError as e:
-        logger.error(f"HTTP error fetching tasks: {e}")
-        return jsonify({'error': 'Failed to fetch tasks', 'details': str(e)}), 500
     except Exception as e:
-        logger.error(f"Unexpected error fetching tasks: {e}")
-        return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
+        logger.error(f"Error fetching tasks from calendar: {e}")
+        return jsonify({'error': 'Failed to fetch tasks', 'details': str(e)}), 500
+
+@app.route('/api/tasks/<tasklist_id>/tasks', methods=['POST'])
+@login_required
+def add_task(tasklist_id):
+    logger.info(f"Adding a new task to tasklist ID: {tasklist_id}")
+    creds = get_credentials()
+    if not creds or not creds.valid:
+        logger.warning("User is not authenticated.")
+        return redirect(url_for('login'))
+
+    data = request.json
+    title = data.get('title')
+    due_date = data.get('due')  # Дата в формате ISO (например, "2025-02-03")
+    due_time = data.get('time')  # Время в формате "HH:mm" (например, "12:00")
+
+    # Преобразуем дату и время в формат RFC 3339
+    due_datetime = None
+    if due_date and due_time:
+        due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = saratov_tz.localize(due_datetime)
+
+    # Создаём событие в календаре
+    calendar_service = build('calendar', 'v3', credentials=creds)
+    event = {
+        'summary': title,
+        'start': {
+            'dateTime': due_datetime.isoformat() if due_datetime else None,
+            'timeZone': 'Europe/Saratov',
+        },
+        'end': {
+            'dateTime': due_datetime.isoformat() if due_datetime else None,
+            'timeZone': 'Europe/Saratov',
+        },
+        'description': f"Task for list ID: {tasklist_id}",
+    }
+
+    calendar_id = 'your-task-calendar-id'
+    try:
+        event_response = calendar_service.events().insert(calendarId=calendar_id, body=event).execute()
+        logger.info(f"Event created successfully: {event_response}")
+        return jsonify(event_response), 201
+    except Exception as e:
+        logger.error(f"Error creating event: {e}")
+        return jsonify({'error': 'Failed to create event', 'details': str(e)}), 500
 
 @app.route('/api/tasks/<tasklist_id>/tasks/<task_id>', methods=['GET', 'PUT', 'DELETE'])
 @login_required
