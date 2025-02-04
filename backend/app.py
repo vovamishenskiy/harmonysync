@@ -191,12 +191,24 @@ def create_task():
     due_date = data.get('due')  # Дата в формате ISO (например, "2025-02-03")
     due_time = data.get('time')  # Время в формате "HH:mm"
     list_id = data.get('list_id')
+    
     if not list_id:
         return jsonify({'error': 'Missing list_id parameter'}), 400
+    
     due_datetime = None
+    
+    # Обработка разных комбинаций даты и времени
     if due_date and due_time:
         due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
+    elif due_date:
+        due_datetime = datetime.strptime(due_date, "%Y-%m-%d")
+    elif due_time:
+        today = datetime.now(saratov_tz).date()
+        due_datetime = datetime.strptime(f"{today} {due_time}", "%Y-%m-%d %H:%M")
+    
+    if due_datetime:
         due_datetime = saratov_tz.localize(due_datetime)
+    
     task = {
         "id": str(uuid4()),
         "title": title,
@@ -204,6 +216,7 @@ def create_task():
         "status": "pending",
         "list_id": list_id
     }
+    
     tasks_collection.insert_one(task)
     return jsonify({'message': 'Task created successfully', 'task': task['id']}), 201
 
