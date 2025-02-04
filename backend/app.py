@@ -36,7 +36,8 @@ class DateTimeEncoder(json.JSONEncoder):
 
 # Создание приложения Flask
 app = Flask(__name__, static_folder='static', static_url_path='')
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
+app.secret_key = "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"
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
 
 # Подключение к MongoDB
 client = MongoClient(
