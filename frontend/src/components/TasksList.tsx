@@ -75,10 +75,16 @@ const TasksList: React.FC = () => {
         list_id: selectedTasklistId,               // ID списка задач
       };
 
-      const response = await axios.post('/api/tasks', taskData);
-      const newTask = response.data;
-      setTasks([...tasks, newTask]);
-      setNewTaskInput('');           // Очищаем поле ввода
+      // Создаём задачу на сервере
+      await axios.post('/api/tasks', taskData);
+
+      // После успешного создания задачи переполучаем список задач
+      if (selectedTasklistId) {
+        handleTasklistSelect(selectedTasklistId);
+      }
+
+      // Очищаем поле ввода
+      setNewTaskInput('');
     } catch (error) {
       console.error('Error adding task:', error);
     }
