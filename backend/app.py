@@ -3,12 +3,12 @@ from functools import wraps
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-import os.path
+import os
 import json
 from datetime import datetime, timedelta
 import pytz
 import logging
-from flask_sqlalchemy import SQLAlchemy
+from pymongo import MongoClient
 from uuid import uuid4
 
 # Настройка логирования
@@ -37,21 +37,12 @@ class DateTimeEncoder(json.JSONEncoder):
 # Создание приложения Flask
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'  # Путь к SQLite БД
-db = SQLAlchemy(app)
 
-# Модель списка задач
-class TaskList(db.Model):
-    id = db.Column(db.String(50), primary_key=True)  # Уникальный ID списка
-    title = db.Column(db.String(200), nullable=False)  # Название списка
-
-# Модель задачи
-class Task(db.Model):
-    id = db.Column(db.String(50), primary_key=True)  # Уникальный ID задачи
-    title = db.Column(db.String(200), nullable=False)  # Название задачи
-    due = db.Column(db.DateTime, nullable=True)  # Время выполнения
-    status = db.Column(db.String(20), default='pending')  # Статус задачи (pending, completed)
-    list_id = db.Column(db.String(50), db.ForeignKey('task_list.id'), nullable=False)  # ID списка задач
+# Подключение к MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['harmonysync']
+tasklists_collection = db['tasklists']  # Коллекция для списков задач
+tasks_collection = db['tasks']  # Коллекция для задач
 
 # Декоратор для проверки авторизации пользователя
 def login_required(f):
@@ -157,12 +148,12 @@ def get_calendar_events():
         logger.error(f"Error fetching calendar events: {e}")
         return jsonify({'error': 'Failed to fetch calendar events', 'details': str(e)}), 500
 
+# Маршрут для получения списков задач
 @app.route('/api/tasklists', methods=['GET'])
 @login_required
 def get_tasklists():
-    tasklists = TaskList.query.all()
-    result = [{'id': tl.id, 'title': tl.title} for tl in tasklists]
-    return jsonify(result), 200
+    tasklists = list(tasklists_collection.find({}, {'_id': 0}))
+    return jsonify(tasklists), 200
 
 # Маршрут для получения задач
 @app.route('/api/tasks', methods=['GET'])
@@ -171,15 +162,8 @@ def get_tasks():
     list_id = request.args.get('list_id')
     if not list_id:
         return jsonify({'error': 'Missing list_id parameter'}), 400
-
-    tasks = Task.query.filter_by(list_id=list_id).all()
-    result = [{
-        'id': task.id,
-        'title': task.title,
-        'due': task.due.isoformat() if task.due else None,
-        'status': task.status
-    } for task in tasks]
-    return jsonify(result), 200
+    tasks = list(tasks_collection.find({"list_id": list_id}, {'_id': 0}))
+    return jsonify(tasks), 200
 
 # Маршрут для создания задачи
 @app.route('/api/tasks', methods=['POST'])
@@ -190,43 +174,35 @@ def create_task():
     due_date = data.get('due')  # Дата в формате ISO (например, "2025-02-03")
     due_time = data.get('time')  # Время в формате "HH:mm"
     list_id = data.get('list_id')
-
     if not list_id:
         return jsonify({'error': 'Missing list_id parameter'}), 400
-
     due_datetime = None
     if due_date and due_time:
         due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
         due_datetime = saratov_tz.localize(due_datetime)
-
-    task = Task(id=str(uuid.uuid4()), title=title, due=due_datetime, list_id=list_id)
-    db.session.add(task)
-    db.session.commit()
-    return jsonify({'message': 'Task created successfully', 'task': task.id}), 201
+    task = {
+        "id": str(uuid4()),
+        "title": title,
+        "due": due_datetime.isoformat() if due_datetime else None,
+        "status": "pending",
+        "list_id": list_id
+    }
+    tasks_collection.insert_one(task)
+    return jsonify({'message': 'Task created successfully', 'task': task['id']}), 201
 
 # Маршрут для удаления задачи
 @app.route('/api/tasks/<task_id>', methods=['DELETE'])
 @login_required
 def delete_task(task_id):
-    task = Task.query.get(task_id)
-    if not task:
+    result = tasks_collection.delete_one({"id": task_id})
+    if result.deleted_count == 0:
         return jsonify({'error': 'Task not found'}), 404
-    db.session.delete(task)
-    db.session.commit()
     return jsonify({'message': 'Task deleted successfully'}), 204
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        
-        if not TaskList.query.filter_by(title="Мои задачи").first():
-            my_tasks_list = TaskList(id=str(uuid.uuid4()), title="Мои задачи")
-            db.session.add(my_tasks_list)
-
-        if not TaskList.query.filter_by(title="💸").first():
-            money_tasks_list = TaskList(id=str(uuid.uuid4()), title="💸")
-            db.session.add(money_tasks_list)
-
-        db.session.commit()
-        
+    # Инициализация начальных данных
+    if not tasklists_collection.find_one({"title": "Мои задачи"}):
+        tasklists_collection.insert_one({"id": str(uuid4()), "title": "Мои задачи"})
+    if not tasklists_collection.find_one({"title": "💸"}):
+        tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
     app.run(host='0.0.0.0', port=5000)
