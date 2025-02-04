@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 
 const TasksList: React.FC = () => {
@@ -11,6 +11,34 @@ const TasksList: React.FC = () => {
   const [dueTime, setDueTime] = useState<string>('');
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+
+  const datePickerRef = useRef<HTMLDivElement>(null);
+  const timePickerRef = useRef<HTMLDivElement>(null);
+
+  // Закрытие попапов при клике вне их области
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isDatePickerOpen &&
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target as Node)
+      ) {
+        setIsDatePickerOpen(false);
+      }
+      if (
+        isTimePickerOpen &&
+        timePickerRef.current &&
+        !timePickerRef.current.contains(event.target as Node)
+      ) {
+        setIsTimePickerOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDatePickerOpen, isTimePickerOpen]);
 
   // Загрузка списков задач при монтировании компонента
   useEffect(() => {
@@ -148,7 +176,7 @@ const TasksList: React.FC = () => {
             </button>
 
             {isTimePickerOpen && (
-              <div className="time-picker-popup">
+              <div className="time-picker-popup" ref={timePickerRef}>
                 <input
                   type="time"
                   value={dueTime}
@@ -167,7 +195,7 @@ const TasksList: React.FC = () => {
             </button>
 
             {isDatePickerOpen && (
-              <div className="date-picker-popup">
+              <div className="date-picker-popup" ref={datePickerRef}>
                 <input
                   type="date"
                   value={dueDate}
