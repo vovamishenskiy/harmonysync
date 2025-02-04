@@ -42,16 +42,12 @@ export const fetchCalendarEvents = async () => {
     }
 };
 
-export const createCalendarTask = async (taskData: {
-    title: string;
-    due?: string;
-    time?: string;
-}) => {
+export const createTask = async (tasklistId: string, taskData: { title: string; dueTime?: string }) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/calendar/events`, taskData);
+        const response = await axios.post(`/api/tasks/${tasklistId}/tasks`, taskData);
         return response.data;
     } catch (error) {
-        console.error('Error creating calendar task: ', error);
+        console.error('Error creating task:', error);
         throw error;
     }
-}
+};

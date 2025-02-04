@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { fetchTaskLists, fetchTasks, createCalendarTask } from '../api/api';
+import axios from 'axios';
 
 const TasksList: React.FC = () => {
   const [tasklists, setTasklists] = useState<any[]>([]);
@@ -7,6 +8,7 @@ const TasksList: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTaskInput, setNewTaskInput] = useState('');
 
+  // Загрузка списков задач при монтировании компонента
   useEffect(() => {
     const loadTaskLists = async () => {
       try {
@@ -28,12 +30,36 @@ const TasksList: React.FC = () => {
     loadTaskLists();
   }, []);
 
+  // Загрузка задач при выборе списка задач
   useEffect(() => {
     if (selectedTasklistId) {
       handleTasklistSelect(selectedTasklistId);
     }
   }, [selectedTasklistId]);
 
+  // Функция для получения списков задач
+  const fetchTaskLists = async (): Promise<any[]> => {
+    try {
+      const response = await axios.get('/api/tasks');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching task lists:', error);
+      throw error;
+    }
+  };
+
+  // Функция для получения задач из выбранного списка
+  const fetchTasks = async (tasklistId: string): Promise<any[]> => {
+    try {
+      const response = await axios.get(`/api/tasks/${tasklistId}/tasks`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      throw error;
+    }
+  };
+
+  // Обработка выбора списка задач
   const handleTasklistSelect = async (id: string) => {
     setSelectedTasklistId(id);
     try {
@@ -50,48 +76,71 @@ const TasksList: React.FC = () => {
     }
   };
 
+  // Обработка добавления новой задачи
   const handleAddTask = async () => {
     if (!newTaskInput.trim()) return;
 
-    const match = newTaskInput.match(/^(.*?)\s*(?:@(\d{2}:\d{2}))?\s*(?:@@(\d{2}\/\d{2}\/\d{4}))?$/);
+    // Парсим строку задачи
+    const match = newTaskInput.match(/^(.*?)\s*(?:@(\d{2}:\d{2}))?$/);
     if (!match) return;
 
-    const title = match[1].trim();
-    const time = match[2];
-    const date = match[3];
-
-    if (!title) return;
+    const title = match[1].trim(); // Название задачи
+    const time = match[2];         // Время уведомления
 
     try {
-      const dueDate = date ? formatDate(date) : undefined;
-      const dueTime = time || undefined;
-
-      const newTask = await createCalendarTask({
+      const taskData = {
         title,
-        due: dueDate,
-        time: dueTime,
-      });
+        dueTime: time || undefined, // Передаём время, если оно указано
+      };
 
-      setTasks([...tasks, newTask]);
-      setNewTaskInput('');
+      const newTask = await createTask(selectedTasklistId!, taskData); // Отправляем данные на сервер
+      setTasks([...tasks, newTask]); // Добавляем задачу в список
+      setNewTaskInput('');           // Очищаем поле ввода
     } catch (error) {
       console.error('Error adding task:', error);
     }
   };
 
-  const formatDate = (dateStr: string): string => {
-    const [day, month, year] = dateStr.split('/').map(Number);
-    return new Date(year, month - 1, day).toISOString().split('T')[0];
+  // Функция для создания задачи
+  const createTask = async (tasklistId: string, taskData: { title: string; dueTime?: string }) => {
+    try {
+      const response = await axios.post(`/api/tasks/${tasklistId}/tasks`, taskData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating task:', error);
+      throw error;
+    }
+  };
+
+  // Обработка завершения задачи
+  const handleCompleteTask = (taskId: string) => {
+    axios.put(`/api/tasks/${selectedTasklistId}/tasks/${taskId}`, { status: 'completed' })
+      .then(() => {
+        setTasks(tasks.map(task =>
+          task.id === taskId ? { ...task, status: 'completed' } : task
+        ));
+      })
+      .catch(error => console.error('Error completing task:', error));
+  };
+
+  // Обработка удаления задачи
+  const handleTaskDelete = async (taskId: string) => {
+    axios.delete(`/api/tasks/${selectedTasklistId}/tasks/${taskId}`)
+      .then(() => {
+        setTasks(tasks.filter(task => task.id !== taskId));
+      })
+      .catch(error => console.error('Error deleting task:', error));
   };
 
   return (
     <div className="tasks-section">
+      {/* Выбор списка задач */}
       <div className="tasklist-dropdown">
         <select
           value={selectedTasklistId || ''}
           onChange={(e) => handleTasklistSelect(e.target.value)}
         >
-          <option value="">Выберите список задач</option>
+          <option value="">Выбрать список задач</option>
           {tasklists.map((tasklist) => (
             <option key={tasklist.id} value={tasklist.id}>
               {tasklist.title}
@@ -100,14 +149,16 @@ const TasksList: React.FC = () => {
         </select>
       </div>
 
+      {/* Отображение задач */}
       {selectedTasklistId && (
         <div>
+          {/* Поле для добавления новой задачи */}
           <div className="add-task">
             <input
               type="text"
               value={newTaskInput}
               onChange={(e) => setNewTaskInput(e.target.value)}
-              placeholder="Название задачи @12:00 @@01/01/2025"
+              placeholder="Название задачи @время"
             />
             <button onClick={handleAddTask}>
               <svg enable-background="new 0 0 24 24" focusable="false" height="24" viewBox="0 0 24 24" width="24">
@@ -117,6 +168,7 @@ const TasksList: React.FC = () => {
             </button>
           </div>
 
+          {/* Список задач */}
           <ul className="tasks-list">
             {tasks.length > 0 ? (
               tasks.map((task) => (
@@ -124,7 +176,7 @@ const TasksList: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={task.status === 'completed'}
-                    onChange={() => { }}
+                    onChange={() => handleCompleteTask(task.id)}
                   />
                   <div className="task-item-inner">
                     <span className={`task-title ${task.status === 'completed' ? 'completed' : ''}`}>
@@ -138,7 +190,7 @@ const TasksList: React.FC = () => {
                       )}
                       <button
                         className="task-delete-button"
-                        onClick={() => { }}
+                        onClick={() => handleTaskDelete(task.id)}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
                           <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />

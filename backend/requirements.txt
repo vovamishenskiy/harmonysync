@@ -1,8 +1,9 @@
-Flask
-google-auth
-google-api-python-client
-gunicorn
-google-auth-oauthlib
-werkzeug==2.0.3
-pytz
-flask-cors
+Flask==2.3.3
+google-auth==2.24.0
+google-api-python-client==2.119.0
+gunicorn==20.1.0
+google-auth-oauthlib==1.2.0
+Werkzeug==2.3.7
+pytz==2023.3
+Flask-SQLAlchemy==3.0.5
+SQLAlchemy==1.4.49
