@@ -200,9 +200,17 @@ body {
   color: gray;
 }
 
-.task-time {
-  font-size: 14px;
-  color: #666;
+.task-time,
+.task-date {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+}
+
+.task-time svg,
+.task-date svg {
+  width: 24px;
 }
 
 .task-delete-button {
@@ -249,7 +257,7 @@ body {
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   width: fit-content;
 }
 
