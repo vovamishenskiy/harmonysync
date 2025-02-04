@@ -44,6 +44,13 @@ db = client['harmonysync']
 tasklists_collection = db['tasklists']  # Коллекция для списков задач
 tasks_collection = db['tasks']  # Коллекция для задач
 
+# Функция для инициализации базы данных
+def initialize_db():
+    if not tasklists_collection.find_one({"title": "Мои задачи"}):
+        tasklists_collection.insert_one({"id": str(uuid4()), "title": "Мои задачи"})
+    if not tasklists_collection.find_one({"title": "💸"}):
+        tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
+
 # Декоратор для проверки авторизации пользователя
 def login_required(f):
     @wraps(f)
@@ -199,10 +206,35 @@ def delete_task(task_id):
         return jsonify({'error': 'Task not found'}), 404
     return jsonify({'message': 'Task deleted successfully'}), 204
 
+# Маршрут для обновления задачи
+@app.route('/api/tasks/<task_id>', methods=['PUT'])
+@login_required
+def update_task(task_id):
+    data = request.json
+    title = data.get('title')
+    due_date = data.get('due')  # Дата в формате ISO (например, "2025-02-03")
+    due_time = data.get('time')  # Время в формате "HH:mm"
+    status = data.get('status')
+
+    due_datetime = None
+    if due_date and due_time:
+        due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = saratov_tz.localize(due_datetime)
+
+    update_data = {}
+    if title:
+        update_data["title"] = title
+    if due_datetime:
+        update_data["due"] = due_datetime.isoformat()
+    if status:
+        update_data["status"] = status
+
+    result = tasks_collection.update_one({"id": task_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        return jsonify({'error': 'Task not found'}), 404
+    return jsonify({'message': 'Task updated successfully'}), 200
+
 if __name__ == '__main__':
-    # Инициализация начальных данных
-    if not tasklists_collection.find_one({"title": "Мои задачи"}):
-        tasklists_collection.insert_one({"id": str(uuid4()), "title": "Мои задачи"})
-    if not tasklists_collection.find_one({"title": "💸"}):
-        tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
+    # Инициализация базы данных
+    initialize_db()
     app.run(host='0.0.0.0', port=5000)
