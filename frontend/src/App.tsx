@@ -13,7 +13,7 @@ function App() {
     const checkAuth = async () => {
       try {
         // @ts-expect-error: ignore not using response
-        const response = await axios.get('/api/tasks');
+        const response = await axios.get('/api/auth/check');
         setIsAuthenticated(true); // Если запрос успешен, пользователь авторизован
       } catch (error) {
         console.error('Not authenticated:', error);

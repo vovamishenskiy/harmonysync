@@ -36,7 +36,7 @@ class DateTimeEncoder(json.JSONEncoder):
 
 # Создание приложения Flask
 app = Flask(__name__, static_folder='static', static_url_path='')
-app.secret_key = "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"
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
 
 # Подключение к MongoDB
@@ -124,6 +124,12 @@ def logout():
     except Exception as e:
         logger.error(f"Error during logout: {e}")
         return "An error occurred during logout.", 500
+    
+@app.route('/api/auth/check', methods=['GET'])
+def check_auth():
+    if get_credentials():
+        return jsonify({'authenticated': True}), 200
+    return jsonify({'authenticated': False}), 401
 
 # Маршрут для получения событий календаря
 @app.route('/api/calendar/events', methods=['GET'])
@@ -220,18 +226,16 @@ def update_task(task_id):
     due_time = data.get('time')  # Время в формате "HH:mm"
     status = data.get('status')
 
-    due_datetime = None
-    if due_date and due_time:
-        due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
-        due_datetime = saratov_tz.localize(due_datetime)
-
     update_data = {}
     if title:
         update_data["title"] = title
-    if due_datetime:
-        update_data["due"] = due_datetime.isoformat()
     if status:
         update_data["status"] = status
+
+    if due_date and due_time:
+        due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = saratov_tz.localize(due_datetime)
+        update_data["due"] = due_datetime.isoformat()
 
     result = tasks_collection.update_one({"id": task_id}, {"$set": update_data})
     if result.matched_count == 0:
