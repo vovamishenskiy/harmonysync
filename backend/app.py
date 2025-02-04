@@ -39,7 +39,10 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 # Подключение к MongoDB
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient(
+    'mongodb://admin:LIv48nw6KyYbIyPX@localhost:27017/',
+    authSource='admin'
+)
 db = client['harmonysync']
 tasklists_collection = db['tasklists']  # Коллекция для списков задач
 tasks_collection = db['tasks']  # Коллекция для задач
