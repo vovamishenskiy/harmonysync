@@ -105,7 +105,7 @@ const CalendarEvents: React.FC = () => {
             </li>
           ))
         ) : (
-          <p>No events available.</p>
+          <p>Нет событий в этом месяце</p>
         )}
       </ul>
     </div>
