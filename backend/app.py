@@ -204,7 +204,7 @@ def create_task():
         due_datetime = datetime.strptime(due_date, "%Y-%m-%d")
     elif due_time:
         today = datetime.now(saratov_tz).date()
-        due_datetime = datetime.strptime(f"{due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = datetime.strptime(f"{today} {due_time}", "%Y-%m-%d %H:%M")
 
     if due_datetime:
         due_datetime = saratov_tz.localize(due_datetime)
