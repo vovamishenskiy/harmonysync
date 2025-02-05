@@ -148,17 +148,17 @@ const TasksList: React.FC = () => {
     }
   };
 
-  const parseDueDate = (due: string) => {
-    if (!due) return null;
+  // const parseDueDate = (due: string) => {
+  //   if (!due) return null;
 
-    const date = new Date(due);
-    const hasTime = due.includes('T'); // Проверяем, есть ли время
+  //   const date = new Date(due);
+  //   const hasTime = due.includes('T'); // Проверяем, есть ли время
 
-    const formattedDate = date.toLocaleDateString();
-    const formattedTime = hasTime ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+  //   const formattedDate = date.toLocaleDateString();
+  //   const formattedTime = hasTime ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
 
-    return { date: formattedDate, time: formattedTime };
-  };
+  //   return { date: formattedDate, time: formattedTime };
+  // };
 
   console.log(tasks)
 
