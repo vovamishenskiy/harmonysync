@@ -95,7 +95,6 @@ const TasksList: React.FC = () => {
     try {
       const taskData: any = {
         title: newTaskInput,
-        due: dueDate || undefined,
         list_id: selectedTasklistId, // ID списка задач
       };
 
@@ -155,7 +154,7 @@ const TasksList: React.FC = () => {
           value={selectedTasklistId || ''}
           onChange={(e) => handleTasklistSelect(e.target.value)}
         >
-          <option value="">Выбрать список задач</option>
+          <option value="">Выберите список задач</option>
           {tasklists.map((tasklist) => (
             <option key={tasklist.id} value={tasklist.id}>
               {tasklist.title}
@@ -231,7 +230,7 @@ const TasksList: React.FC = () => {
                     {task.title}
                   </span>
                   <div className="task-item-inner-bottom">
-                    {task.due && (
+                    {task.due_date && (
                       <>
                         <div className="task-date">
                           <svg data-slot="icon" aria-hidden="true" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -241,7 +240,7 @@ const TasksList: React.FC = () => {
                             new Date(task.due).getMonth() !== new Date().getMonth() ||
                             new Date(task.due).getDate() !== new Date().getDate() ? (
                             <span>
-                              {new Date(task.due).toLocaleDateString([], {
+                              {new Date(task.due_date).toLocaleDateString([], {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
@@ -253,9 +252,9 @@ const TasksList: React.FC = () => {
                           <svg data-slot="icon" aria-hidden="true" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round"></path>
                           </svg>
-                          {new Date(task.due).getHours() !== 0 || new Date(task.due).getMinutes() !== 0 ? (
+                          {new Date(task.due_time).getHours() !== 0 || new Date(task.due).getMinutes() !== 0 ? (
                             <span>
-                              {new Date(task.due).toLocaleTimeString([], {
+                              {new Date(task.due_time).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}

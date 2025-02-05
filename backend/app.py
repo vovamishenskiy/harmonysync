@@ -192,37 +192,46 @@ def create_task():
     due_time = data.get('time')  # Время в формате "HH:mm"
     list_id = data.get('list_id')
 
+    # Проверяем обязательное поле list_id
     if not list_id:
         return jsonify({'error': 'Missing list_id parameter'}), 400
 
-    due_datetime = None
-
     # Обработка разных комбинаций даты и времени
+    due_datetime = None
     if due_date and due_time:
+        # Если указаны и дата, и время
         due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = saratov_tz.localize(due_datetime)
     elif due_date:
+        # Если указана только дата
         due_datetime = datetime.strptime(due_date, "%Y-%m-%d")
+        due_datetime = saratov_tz.localize(due_datetime)
     elif due_time:
+        # Если указано только время (используем текущую дату)
         today = datetime.now(saratov_tz).date()
         due_datetime = datetime.strptime(f"{today} {due_time}", "%Y-%m-%d %H:%M")
-
-    if due_datetime:
         due_datetime = saratov_tz.localize(due_datetime)
 
+    # Формируем задачу для сохранения в базу данных
     task = {
         "id": str(uuid4()),
         "title": title,
-        "due": due_datetime.isoformat() if due_datetime else None,
+        "due_date": due_date,  # Сохраняем дату отдельно
+        "due_time": due_time,  # Сохраняем время отдельно
+        "due": due_datetime.isoformat() if due_datetime else None,  # Полная дата и время (если есть)
         "status": "pending",
         "list_id": list_id
     }
 
+    # Сохраняем задачу в MongoDB
     tasks_collection.insert_one(task)
 
     # Формируем ответ без лишних полей
     response_data = {
         "id": task["id"],
         "title": task["title"],
+        "due_date": task["due_date"],  # Включаем только если есть
+        "due_time": task["due_time"],  # Включаем только если есть
         "due": task["due"],  # Включаем только если есть
         "status": task["status"],
         "list_id": task["list_id"]
@@ -255,14 +264,27 @@ def update_task(task_id):
     if status:
         update_data["status"] = status
 
+    due_datetime = None
     if due_date and due_time:
         due_datetime = datetime.strptime(f"{due_date} {due_time}", "%Y-%m-%d %H:%M")
         due_datetime = saratov_tz.localize(due_datetime)
+    elif due_date:
+        due_datetime = datetime.strptime(due_date, "%Y-%m-%d")
+        due_datetime = saratov_tz.localize(due_datetime)
+    elif due_time:
+        today = datetime.now(saratov_tz).date()
+        due_datetime = datetime.strptime(f"{today} {due_time}", "%Y-%m-%d %H:%M")
+        due_datetime = saratov_tz.localize(due_datetime)
+
+    if due_datetime:
+        update_data["due_date"] = due_date
+        update_data["due_time"] = due_time
         update_data["due"] = due_datetime.isoformat()
 
     result = tasks_collection.update_one({"id": task_id}, {"$set": update_data})
     if result.matched_count == 0:
         return jsonify({'error': 'Task not found'}), 404
+
     return jsonify({'message': 'Task updated successfully'}), 200
 
 if __name__ == '__main__':
