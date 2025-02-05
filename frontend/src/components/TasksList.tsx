@@ -148,6 +148,20 @@ const TasksList: React.FC = () => {
     }
   };
 
+  const parseDueDate = (due: string) => {
+    if (!due) return null;
+
+    const date = new Date(due);
+    const hasTime = due.includes('T'); // Проверяем, есть ли время
+
+    const formattedDate = date.toLocaleDateString();
+    const formattedTime = hasTime ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+
+    return { date: formattedDate, time: formattedTime };
+  };
+
+  console.log(tasks)
+
   return (
     <div className="tasks-section">
       <div className="tasklist-dropdown">
