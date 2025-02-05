@@ -96,7 +96,6 @@ const TasksList: React.FC = () => {
       const taskData: any = {
         title: newTaskInput,
         due: dueDate || undefined,
-        time: dueTime || undefined,
         list_id: selectedTasklistId, // ID списка задач
       };
 
