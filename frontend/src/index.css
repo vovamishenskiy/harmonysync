@@ -273,6 +273,7 @@ body {
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
   max-width: 340px;
+  align-self: flex-start;
 }
 
 .calendar-header {
@@ -413,10 +414,13 @@ body {
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
   background: #fff;
-  width: calc(100% - 32px);
-  position: absolute;
-  bottom: -144px;
-  left: 0;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: -16px;
+  margin-top: 100px;
 }
 
 .completed-task button {
