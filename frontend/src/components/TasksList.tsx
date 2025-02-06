@@ -46,6 +46,7 @@ const TasksList: React.FC = () => {
       try {
         const response = await axios.get('/api/tasklists');
         const data = response.data;
+        console.log(data)
         if (Array.isArray(data)) {
           setTasklists(data);
           if (data.length > 0) {
@@ -108,8 +109,6 @@ const TasksList: React.FC = () => {
         taskData.time = dueTime;
       }
 
-      console.log(taskData)
-
       // Создаём задачу на сервере
       await axios.post('/api/tasks', taskData);
 
@@ -148,8 +147,6 @@ const TasksList: React.FC = () => {
       console.error('Error deleting task:', error);
     }
   };
-
-  console.log(tasks)
 
   return (
     <div className="tasks-section">
@@ -259,10 +256,11 @@ const TasksList: React.FC = () => {
                         </svg>
                         {new Date(task.due_time).getHours() !== 0 || new Date(task.due).getMinutes() !== 0 ? (
                           <span>
-                            {new Date(task.due_time).toLocaleTimeString([], {
+                            {/* {new Date(task.due_time).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit',
-                            })}
+                            })} */}
+                            {task.due_time}
                           </span>
                         ) : null}
                       </div>
