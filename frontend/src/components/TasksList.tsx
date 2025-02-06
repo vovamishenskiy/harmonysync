@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { fetchCompletedTasksCount } from '../api/api';
 
 const TasksList: React.FC = () => {
   const [tasklists, setTasklists] = useState<any[]>([]);
@@ -158,8 +157,9 @@ const TasksList: React.FC = () => {
   useEffect(() => {
     const getCompletedTasksCount = async () => {
       try {
-        const count = await fetchCompletedTasksCount();
-        setCompletedTasksCount(count);
+        const response = await fetch('/api/completed_tasks_count');
+        const count = await response.json();
+        setCompletedTasksCount(count.completed_tasks_count);
       } catch (error) {
         console.error('Error loading completed tasks count:', error);
       }
