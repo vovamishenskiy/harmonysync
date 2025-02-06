@@ -159,6 +159,10 @@ const TasksList: React.FC = () => {
       try {
         const response = await fetch('/api/completed_tasks_count');
         const count = await response.json();
+
+        console.log('response: ', response);
+        console.log('count: ', count);
+
         setCompletedTasksCount(count.completed_tasks_count);
       } catch (error) {
         console.error('Error loading completed tasks count:', error);
