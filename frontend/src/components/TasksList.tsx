@@ -300,11 +300,11 @@ const TasksList: React.FC = () => {
             )}
           </div>
         )}
-      </div>
-      <>
         <button onClick={() => setShowCompletedTasks(!showCompletedTasks)} className='show-completed-tasks-btn'>
           {showCompletedTasks ? '▲ Выполненные задачи' : '▼ Выполненные задачи'}
         </button>
+      </div>
+      <>
         {showCompletedTasks && (
           <div className='completed-tasks-container'>
             {completedTasks.map((task) => (
