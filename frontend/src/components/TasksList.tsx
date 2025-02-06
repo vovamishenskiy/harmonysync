@@ -46,7 +46,6 @@ const TasksList: React.FC = () => {
       try {
         const response = await axios.get('/api/tasklists');
         const data = response.data;
-        console.log(data)
         if (Array.isArray(data)) {
           setTasklists(data);
           if (data.length > 0) {
@@ -77,6 +76,7 @@ const TasksList: React.FC = () => {
     try {
       const response = await axios.get(`/api/tasks?list_id=${id}`);
       const data = response.data;
+      console.log(data)
       if (Array.isArray(data)) {
         setTasks(data);
       } else {
@@ -240,11 +240,7 @@ const TasksList: React.FC = () => {
                           new Date(task.due).getMonth() !== new Date().getMonth() ||
                           new Date(task.due).getDate() !== new Date().getDate() ? (
                           <span>
-                            {new Date(task.due_date).toLocaleDateString([], {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                            })}
+                            {task.due_date}
                           </span>
                         ) : null}
                       </div>
@@ -256,10 +252,6 @@ const TasksList: React.FC = () => {
                         </svg>
                         {new Date(task.due_time).getHours() !== 0 || new Date(task.due).getMinutes() !== 0 ? (
                           <span>
-                            {/* {new Date(task.due_time).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })} */}
                             {task.due_time}
                           </span>
                         ) : null}
