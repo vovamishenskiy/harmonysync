@@ -147,6 +147,8 @@ const TasksList: React.FC = () => {
     }
   };
 
+  console.log(tasks)
+
   return (
     <div className="tasks-section">
       <div className="tasklist-dropdown">
