@@ -24,13 +24,18 @@ body {
 }
 
 /* Стили для левого блока (задачи) */
+.tasks-main-left {
+  width: 100%;
+}
+
 .tasks-section {
   border-radius: 12px;
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
   background: #fff;
-  width: 100%;
+  width: calc(100% - 32px);
   position: relative;
+  padding-bottom: 50px;
 }
 
 .tasklist-dropdown {
@@ -414,13 +419,21 @@ body {
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
   background: #fff;
-  width: 100%;
+  width: calc(100% - 32px);
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-left: -16px;
-  margin-top: 100px;
+  margin-top: 20px;
+}
+
+.completed-task {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .completed-task button {
