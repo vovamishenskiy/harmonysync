@@ -30,6 +30,7 @@ body {
   padding: 16px;
   background: #fff;
   width: 100%;
+  position: relative;
 }
 
 .tasklist-dropdown {
@@ -389,4 +390,41 @@ body {
 
 .logout-button:hover {
   background-color: #c63d31;
+}
+
+/* выполненные задачи */
+.show-completed-tasks-btn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-radius: 12px;
+  border: 0;
+  width: 100%;
+  text-align: start;
+  padding-left: 24px;
+  height: 45px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.completed-tasks-container {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px #0000001a;
+  padding: 16px;
+  background: #fff;
+  width: calc(100% - 32px);
+  position: absolute;
+  bottom: -144px;
+  left: 0;
+}
+
+.completed-task button {
+  border: 0;
+  background: transparent;
+}
+
+.completed-task button svg {
+  width: 24px;
+  height: 24px;
 }
