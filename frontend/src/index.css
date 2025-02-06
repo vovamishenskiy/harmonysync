@@ -213,6 +213,10 @@ body {
   width: 24px;
 }
 
+.task-date svg {
+  padding-bottom: 2px;
+}
+
 .task-delete-button {
   width: 32px;
   height: 32px;
