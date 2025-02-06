@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { fetchCompletedTasksCount } from './api';
+import { fetchCompletedTasksCount } from '../api/api';
 
 const TasksList: React.FC = () => {
   const [tasklists, setTasklists] = useState<any[]>([]);
