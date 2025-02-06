@@ -10,6 +10,8 @@ import pytz
 import logging
 from pymongo import MongoClient
 from uuid import uuid4
+import threading
+import time
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -220,7 +222,9 @@ def create_task():
         "due_time": due_time,  # Сохраняем время отдельно
         "due": due_datetime.isoformat() if due_datetime else None,  # Полная дата и время (если есть)
         "status": "pending",
-        "list_id": list_id
+        "list_id": list_id,
+        "created_at": datetime.now(saratov_tz).isoformat(),
+        "updated_at": datetime.now(saratov_tz).isoformat()
     }
 
     # Сохраняем задачу в MongoDB
@@ -280,12 +284,63 @@ def update_task(task_id):
         update_data["due_date"] = due_date
         update_data["due_time"] = due_time
         update_data["due"] = due_datetime.isoformat()
+        
+    update_data["updated_at"] = datetime.now(saratov_tz).isoformat()
 
     result = tasks_collection.update_one({"id": task_id}, {"$set": update_data})
     if result.matched_count == 0:
         return jsonify({'error': 'Task not found'}), 404
 
     return jsonify({'message': 'Task updated successfully'}), 200
+
+def archive_completed_tasks():
+    while True:
+        try:
+            cutoff_date = datetime.now(saratov_tz) - timedelta(days=30)
+            old_completed_tasks = list(tasks_collection.find({
+                "status": "completed",
+                "updated_at": {"$lt": cutoff_date.isoformat()}
+            }, {'_id': 0}))
+
+            if old_completed_tasks:
+                archive_dir = "task_archive"
+                os.makedirs(archive_dir, exist_ok=True)
+
+                # Попытка обновить один файл
+                archive_file = os.path.join(archive_dir, "archive.json")
+                if os.path.exists(archive_file):
+                    with open(archive_file, "r", encoding="utf-8") as f:
+                        archived_tasks = json.load(f)
+                else:
+                    archived_tasks = []
+
+                # Добавляем новые задачи в архив
+                archived_tasks.extend(old_completed_tasks)
+
+                # Сохраняем обновленный архив
+                with open(archive_file, "w", encoding="utf-8") as f:
+                    json.dump(archived_tasks, f, ensure_ascii=False, indent=4)
+
+                # Удаляем архивированные задачи из базы
+                tasks_collection.delete_many({
+                    "status": "completed",
+                    "updated_at": {"$lt": cutoff_date.isoformat()}
+                })
+
+                logger.info(f"Archived {len(old_completed_tasks)} completed tasks.")
+
+            else:
+                logger.info("No completed tasks to archive.")
+
+        except Exception as e:
+            logger.error(f"Error in archiving tasks: {e}")
+
+        # Запуск раз в сутки
+        time.sleep(86400)
+
+# Запуск фоновой задачи
+thread = threading.Thread(target=archive_completed_tasks, daemon=True)
+thread.start()
 
 if __name__ == '__main__':
     # Инициализация базы данных
