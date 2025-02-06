@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { fetchCompletedTasksCount } from './api';
 
 const TasksList: React.FC = () => {
   const [tasklists, setTasklists] = useState<any[]>([]);
@@ -12,6 +13,7 @@ const TasksList: React.FC = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
+  const [completedTasksCount, setCompletedTasksCount] = useState<number>(0);
 
   // const activeTasks = tasks.filter(task => task.status !== 'completed');
   const completedTasks = tasks.filter(task => task.status === 'completed');
@@ -151,6 +153,20 @@ const TasksList: React.FC = () => {
       console.error('Error deleting task:', error);
     }
   };
+
+  // Получение кол-ва выполненных задач
+  useEffect(() => {
+    const getCompletedTasksCount = async () => {
+      try {
+        const count = await fetchCompletedTasksCount();
+        setCompletedTasksCount(count);
+      } catch (error) {
+        console.error('Error loading completed tasks count:', error);
+      }
+    };
+
+    getCompletedTasksCount();
+  }, []);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -301,7 +317,7 @@ const TasksList: React.FC = () => {
           </div>
         )}
         <button onClick={() => setShowCompletedTasks(!showCompletedTasks)} className='show-completed-tasks-btn'>
-          {showCompletedTasks ? '▲ Выполненные задачи' : '▼ Выполненные задачи'}
+          {showCompletedTasks ? `▲ Выполненные задачи (${completedTasksCount})` : `▼ Выполненные задачи (${completedTasksCount})`}
         </button>
       </div>
       <>

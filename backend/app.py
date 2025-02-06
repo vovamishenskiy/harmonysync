@@ -342,6 +342,14 @@ def archive_completed_tasks():
 thread = threading.Thread(target=archive_completed_tasks, daemon=True)
 thread.start()
 
+# Маршрут для получения количества выполненных задач
+@app.route('/api/completed_tasks_count', methods=['GET'])
+@login_required
+def get_completed_tasks_count():
+    completed_tasks_count = tasks_collection.count_documents({"status": "completed"})
+    return jsonify({'completed_tasks_count': completed_tasks_count}), 200
+
+
 if __name__ == '__main__':
     # Инициализация базы данных
     initialize_db()
