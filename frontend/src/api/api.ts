@@ -51,3 +51,13 @@ export const createTask = async (tasklistId: string, taskData: { title: string; 
         throw error;
     }
 };
+
+export const fetchCompletedTasksCount = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/completed_tasks_count`);
+        return response.data.completed_tasks_count;
+    } catch (error) {
+        console.error('Error fetching completed tasks count: ', error);
+        throw error;
+    }
+};
