@@ -502,7 +502,7 @@ body {
 }
 
 .theme-button svg {
-  stroke: var(--text-color);
+  stroke: var(--text-color-i);
   width: 28px;
   height: 28px;
 }
