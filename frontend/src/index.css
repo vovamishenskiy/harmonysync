@@ -1,7 +1,9 @@
 /* Общие стили */
 :root {
   --bg-color: #f5f5f5;
+  --bg-color-i: #121212;
   --text-color: #000;
+  --text-color-i: #fff;
   --section-color: #fff;
   --btn-stroke: #000;
   --delete-btn-stroke: #666;
@@ -10,7 +12,9 @@
 
 [data-theme="dark"] {
   --bg-color: #121212;
+  --bg-color-i: #f5f5f5;
   --text-color: #fff;
+  --text-color-i: #000;
   --section-color: #1e1e1e;
   --btn-stroke: #fff;
   --delete-btn-stroke: #fff;
@@ -85,6 +89,10 @@ body {
   border: 0;
   cursor: pointer;
   color: var(--text-color);
+}
+
+.tasklist-dropdown select option {
+  background: var(--bg-color);
 }
 
 .add-task {
@@ -473,4 +481,18 @@ body {
 .completed-task button svg {
   width: 24px;
   height: 24px;
+}
+
+.theme-button {
+  position: absolute;
+  top: 10px;
+  right: 110px;
+  background-color: var(--bg-color-i);
+  color: var(--text-color-i);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color .3s ease;
 }
