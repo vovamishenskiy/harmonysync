@@ -506,3 +506,57 @@ body {
   width: 28px;
   height: 28px;
 }
+
+@media screen and (max-width: 370px) {
+  .App {
+    width: calc(100% - 40px);
+  }
+
+  .theme-button {
+    left: 120px;
+  }
+
+  .logout-button {
+    right: 100px;
+  }
+
+  .main-title {
+    margin-top: 40px;
+  }
+
+  .container {
+    max-width: 360px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .calendar-section {
+    /* max-width: 288px; */
+    width: calc(100% - 32px);
+  }
+
+  .calendar-day {
+    font-size: 14px;
+    padding: 9px;
+  }
+
+  .add-task input {
+    font-size: 14px;
+  }
+
+  .task-item,
+  .completed-task {
+    padding-left: 0;
+    margin-left: -4px;
+  }
+
+  .task-time span,
+  .task-date span {
+    font-size: 14px;
+  }
+
+  .task-date span {
+    white-space: nowrap;
+  }
+}
