@@ -5,6 +5,7 @@
   --section-color: #fff;
   --btn-stroke: #000;
   --delete-btn-stroke: #666;
+  --calendar-text-color: #afafaf;
 }
 
 [data-theme="dark"] {
@@ -13,6 +14,7 @@
   --section-color: #1e1e1e;
   --btn-stroke: #fff;
   --delete-btn-stroke: #fff;
+  --calendar-text-color: #000;
 }
 
 body {
@@ -150,6 +152,7 @@ body {
 .time-icon svg,
 .date-icon svg {
   fill: none !important;
+  stroke: var(--btn-stroke);
 }
 
 .date-icon {
@@ -325,7 +328,7 @@ body {
 .calendar-day.prev-month-day {
   background: #ececec;
   /* color: #afafaf; */
-  color: var(--text-color);
+  color: var(--calendar-text-color);
 }
 
 .calendar-day.current-day {
