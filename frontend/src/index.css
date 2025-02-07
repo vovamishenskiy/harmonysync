@@ -1,10 +1,23 @@
 /* Общие стили */
+:root {
+  --bg-color: #f5f5f5;
+  --text-color: #000;
+  --section-color: #fff;
+}
+
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #fff;
+  --section-color: #1e1e1e;
+}
+
 body {
   font-family: Arial, sans-serif;
+  color: var(--text-color);
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
 }
 
 .App {
@@ -32,7 +45,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
-  background: #fff;
+  background: var(--section-color);
   width: calc(100% - 32px);
   position: relative;
   padding-bottom: 60px;
@@ -143,7 +156,7 @@ body {
   position: absolute;
   right: 70px;
   padding: 12px;
-  background: #fff;
+  background: var(--section-color);
   border-radius: 12px;
   box-shadow: 0 4px 12px #0000001a;
   top: -50px;
@@ -165,7 +178,7 @@ body {
   position: absolute;
   right: 0px;
   top: -50px;
-  background: #fff;
+  background: var(--section-color);
   padding: 12px;
   border-radius: 12px;
   display: flex;
@@ -273,7 +286,7 @@ body {
 
 /* Стили для правого блока (календарь) */
 .calendar-section {
-  background-color: #fff;
+  background-color: var(--section-color);
   border-radius: 12px;
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;

@@ -7,6 +7,16 @@ import './index.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  }
 
   useEffect(() => {
     // Проверяем, есть ли доступ к API (токен OAuth)
@@ -41,6 +51,7 @@ function App() {
   return (
     <div className="App">
       <h1>HarmonySync</h1>
+      <button onClick={toggleTheme} className='theme-button'>{theme === 'light' ? 'dark' : 'light'}</button>
       <button onClick={() => window.location.href = '/api/logout'} className="logout-button">
         Выйти
       </button>
