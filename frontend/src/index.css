@@ -3,12 +3,16 @@
   --bg-color: #f5f5f5;
   --text-color: #000;
   --section-color: #fff;
+  --btn-stroke: #000;
+  --delete-btn-stroke: #666;
 }
 
 [data-theme="dark"] {
   --bg-color: #121212;
   --text-color: #fff;
   --section-color: #1e1e1e;
+  --btn-stroke: #fff;
+  --delete-btn-stroke: #fff;
 }
 
 body {
@@ -78,6 +82,7 @@ body {
   border-radius: 16px;
   border: 0;
   cursor: pointer;
+  color: var(--text-color);
 }
 
 .add-task {
@@ -230,6 +235,7 @@ body {
 .task-time svg,
 .task-date svg {
   width: 24px;
+  stroke: var(--btn-stroke);
 }
 
 .task-date svg {
@@ -262,7 +268,7 @@ body {
 .task-delete-button svg {
   width: 24px;
   height: 24px;
-  stroke: #666;
+  stroke: var(--delete-btn-stroke);
 }
 
 .task-delete-button:hover {
@@ -318,7 +324,8 @@ body {
 
 .calendar-day.prev-month-day {
   background: #ececec;
-  color: #afafaf;
+  /* color: #afafaf; */
+  color: var(--text-color);
 }
 
 .calendar-day.current-day {
@@ -426,13 +433,14 @@ body {
   cursor: pointer;
   font-size: 16px;
   margin-bottom: 10px;
+  color: var(--text-color);
 }
 
 .completed-tasks-container {
   border-radius: 12px;
   box-shadow: 0 4px 12px #0000001a;
   padding: 16px;
-  background: #fff;
+  background: var(--section-color);
   width: calc(100% - 32px);
   position: relative;
   display: flex;
@@ -448,6 +456,10 @@ body {
   flex-direction: row;
   align-items: center;
   gap: 10px;
+}
+
+.completed-task .task-item-inner span {
+  color: var(--text-color);
 }
 
 .completed-task button {
