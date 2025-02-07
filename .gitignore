@@ -46,3 +46,4 @@ render.yaml
 # Logs and temporary files
 logs/
 tmp/
+frontend/android/app/src/androidTest
