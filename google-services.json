@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "460016361061",
+    "project_id": "harmonysync-9b30a",
+    "storage_bucket": "harmonysync-9b30a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460016361061:android:0a3e29184966b66d47f08c",
+        "android_client_info": {
+          "package_name": "com.vovamishenskiy.harmonysync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDozw0bHhfFsbdBBGyDQtQ7ajqvJrA7WwM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

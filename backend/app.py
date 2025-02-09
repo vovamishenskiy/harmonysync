@@ -12,11 +12,17 @@ from pymongo import MongoClient
 from uuid import uuid4
 import threading
 import time
+import firebase_admin
+from firebase_admin import auth, credentials
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
+FIREBASE_CRED_PATH = "google-services.json"
+cred = credentials.Certificate(FIREBASE_CRED_PATH)
+firebase_admin.initialize_app(cred)
 
 # Области доступа Google API
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -80,6 +86,69 @@ def save_credentials(creds):
 @app.route('/')
 def index():
     return app.send_static_file('index.html') if get_credentials() else app.send_static_file('login.html')
+
+# Декоратор для проверки аутентификации через Firebase
+def firebase_login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        id_token = request.headers.get("Authorization")
+        if not id_token:
+            return jsonify({"error": "Missing Firebase ID Token"}), 401
+
+        try:
+            decoded_token = auth.verify_id_token(id_token)
+            request.user = decoded_token
+        except Exception as e:
+            logger.error(f"Firebase auth error: {e}")
+            return jsonify({"error": "Invalid Firebase ID Token"}), 401
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+# Маршрут для входа через Firebase (получение и сохранение пользователя)
+@app.route("/api/firebase-login", methods=["POST"])
+def firebase_login():
+    data = request.json
+    id_token = data.get("id_token")
+
+    if not id_token:
+        return jsonify({"error": "Missing Firebase ID Token"}), 400
+
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        user_uid = decoded_token["uid"]
+        email = decoded_token.get("email", "")
+        name = decoded_token.get("name", "")
+        photo_url = decoded_token.get("picture", "")
+
+        # Проверяем, есть ли пользователь в базе
+        user = users_collection.find_one({"uid": user_uid})
+
+        if not user:
+            new_user = {
+                "uid": user_uid,
+                "email": email,
+                "name": name,
+                "photo_url": photo_url,
+                "created_at": datetime.utcnow().isoformat()
+            }
+            users_collection.insert_one(new_user)
+            user = new_user
+
+        return jsonify({
+            "message": "User authenticated successfully",
+            "user": {
+                "uid": user["uid"],
+                "email": user["email"],
+                "name": user["name"],
+                "photo_url": user["photo_url"]
+            }
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Firebase login error: {e}")
+        return jsonify({"error": "Invalid Firebase ID Token"}), 401
 
 # Маршрут для входа через Google OAuth
 @app.route('/login')
