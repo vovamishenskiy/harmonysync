@@ -84,9 +84,15 @@ def index():
 # Маршрут для входа через Google OAuth
 @app.route('/login')
 def login():
+    platform = request.args.get('platform', 'web')
+    redirect_uri = f"https://harmonysync.ru/oauth2callback"
+    
+    if platform == 'android':
+        redirect_uri = "https://harmonysync.ru/oauth2callback"
+    
     flow = InstalledAppFlow.from_client_secrets_file(
         'credentials.json', SCOPES,
-        redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        redirect_uri=redirect_uri
     )
     authorization_url, state = flow.authorization_url(
         access_type='offline',
@@ -95,22 +101,38 @@ def login():
     session['state'] = state
     return redirect(authorization_url)
 
-# Маршрут для обработки колбэка OAuth
 @app.route('/oauth2callback')
 def oauth2callback():
     state = request.args.get('state')
     if state != session.get('state'):
         logger.error("Mismatching state in OAuth callback")
         return "Mismatching state", 400
+    
+    platform = request.args.get('platform', 'web')
+    redirect_uri = f"https://harmonysync.ru/oauth2callback"
+    
+    if platform == 'android':
+        redirect_uri = "https://harmonysync.ru/oauth2callback"
+    
     flow = InstalledAppFlow.from_client_secrets_file(
         'credentials.json', SCOPES,
         state=state,
-        redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        redirect_uri=redirect_uri
     )
+    
     try:
         flow.fetch_token(authorization_response=request.url)
         creds = flow.credentials
         save_credentials(creds)
+        
+        if platform == 'android':
+            # Для Android возвращаем токен напрямую
+            return jsonify({
+                'access_token': creds.token,
+                'refresh_token': creds.refresh_token,
+                'expires_in': creds.expiry.isoformat()
+            }), 200
+        
         return redirect(url_for('index'))
     except Exception as e:
         logger.error(f"Error processing OAuth callback: {e}")
