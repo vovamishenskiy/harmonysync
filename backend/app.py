@@ -84,16 +84,22 @@ def index():
 # Маршрут для входа через Google OAuth
 @app.route('/login')
 def login():
-    flow = InstalledAppFlow.from_client_secrets_file(
-        'credentials.json', SCOPES,
-        redirect_uri=f"https://harmonysync.ru/oauth2callback"
-    )
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        prompt='consent'
-    )
-    session['state'] = state
-    return redirect(authorization_url)
+    logger.info("User accessed /login")
+    try:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json', SCOPES,
+            redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        )
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            prompt='consent'
+        )
+        session['state'] = state
+        logger.info(f"Generated authorization URL: {authorization_url}")
+        return redirect(authorization_url)
+    except Exception as e:
+        logger.error(f"Error during login: {e}")
+        return f"Login error: {e}", 500
 
 # Маршрут для обработки колбэка OAuth
 @app.route('/oauth2callback')
