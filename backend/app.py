@@ -178,7 +178,8 @@ def get_calendar_events():
 @app.route('/api/tasklists', methods=['GET'])
 @login_required
 def get_tasklists():
-    tasklists = list(tasklists_collection.find({}, {'_id': 0}))
+    tasklists = db.tasklists.find()
+    tasklists = [{"id": str(tasklist["id"]), "title": tasklist["title"]} for tasklist in tasklists]
     return jsonify(tasklists), 200
 
 # Маршрут для получения задач
