@@ -86,6 +86,7 @@ def index():
 def login():
     logger.info("User accessed /login")
     try:
+        print(f"Запрос: {request.url}")
         flow = InstalledAppFlow.from_client_secrets_file(
             'credentials.json', SCOPES,
             redirect_uri=f"https://harmonysync.ru/oauth2callback"
