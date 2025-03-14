@@ -12,17 +12,11 @@ from pymongo import MongoClient
 from uuid import uuid4
 import threading
 import time
-import firebase_admin
-from firebase_admin import auth, credentials
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
-
-FIREBASE_CRED_PATH = "google-services.json"
-cred = credentials.Certificate(FIREBASE_CRED_PATH)
-firebase_admin.initialize_app(cred)
 
 # Области доступа Google API
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -87,121 +81,43 @@ def save_credentials(creds):
 def index():
     return app.send_static_file('index.html') if get_credentials() else app.send_static_file('login.html')
 
-# Декоратор для проверки аутентификации через Firebase
-def firebase_login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        id_token = request.headers.get("Authorization")
-        if not id_token:
-            return jsonify({"error": "Missing Firebase ID Token"}), 401
-
-        try:
-            decoded_token = auth.verify_id_token(id_token)
-            request.user = decoded_token
-        except Exception as e:
-            logger.error(f"Firebase auth error: {e}")
-            return jsonify({"error": "Invalid Firebase ID Token"}), 401
-        
-        return f(*args, **kwargs)
-    
-    return decorated_function
-
-# Маршрут для входа через Firebase (получение и сохранение пользователя)
-@app.route("/api/firebase-login", methods=["POST"])
-def firebase_login():
-    data = request.json
-    id_token = data.get("id_token")
-
-    if not id_token:
-        return jsonify({"error": "Missing Firebase ID Token"}), 400
-
-    try:
-        decoded_token = auth.verify_id_token(id_token)
-        user_uid = decoded_token["uid"]
-        email = decoded_token.get("email", "")
-        name = decoded_token.get("name", "")
-        photo_url = decoded_token.get("picture", "")
-
-        # Проверяем, есть ли пользователь в базе
-        user = users_collection.find_one({"uid": user_uid})
-
-        if not user:
-            new_user = {
-                "uid": user_uid,
-                "email": email,
-                "name": name,
-                "photo_url": photo_url,
-                "created_at": datetime.utcnow().isoformat()
-            }
-            users_collection.insert_one(new_user)
-            user = new_user
-
-        return jsonify({
-            "message": "User authenticated successfully",
-            "user": {
-                "uid": user["uid"],
-                "email": user["email"],
-                "name": user["name"],
-                "photo_url": user["photo_url"]
-            }
-        }), 200
-
-    except Exception as e:
-        logger.error(f"Firebase login error: {e}")
-        return jsonify({"error": "Invalid Firebase ID Token"}), 401
-
 # Маршрут для входа через Google OAuth
 @app.route('/login')
 def login():
-    platform = request.args.get('platform', 'web')
-    redirect_uri = f"https://harmonysync.ru/oauth2callback"
-    
-    if platform == 'android':
-        redirect_uri = "https://harmonysync.ru/oauth2callback"
-    
-    flow = InstalledAppFlow.from_client_secrets_file(
-        'credentials.json', SCOPES,
-        redirect_uri=redirect_uri
-    )
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        prompt='consent'
-    )
-    session['state'] = state
-    return redirect(authorization_url)
+    logger.info("User accessed /login")
+    try:
+        print(f"Запрос: {request.url}")
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json', SCOPES,
+            redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        )
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            prompt='consent'
+        )
+        session['state'] = state
+        logger.info(f"Generated authorization URL: {authorization_url}")
+        return redirect(authorization_url)
+    except Exception as e:
+        logger.error(f"Error during login: {e}")
+        return f"Login error: {e}", 500
 
+# Маршрут для обработки колбэка OAuth
 @app.route('/oauth2callback')
 def oauth2callback():
     state = request.args.get('state')
     if state != session.get('state'):
         logger.error("Mismatching state in OAuth callback")
         return "Mismatching state", 400
-    
-    platform = request.args.get('platform', 'web')
-    redirect_uri = f"https://harmonysync.ru/oauth2callback"
-    
-    if platform == 'android':
-        redirect_uri = "https://harmonysync.ru/oauth2callback"
-    
     flow = InstalledAppFlow.from_client_secrets_file(
         'credentials.json', SCOPES,
         state=state,
-        redirect_uri=redirect_uri
+        redirect_uri=f"https://harmonysync.ru/oauth2callback"
     )
-    
     try:
         flow.fetch_token(authorization_response=request.url)
         creds = flow.credentials
         save_credentials(creds)
-        
-        if platform == 'android':
-            # Для Android возвращаем токен напрямую
-            return jsonify({
-                'access_token': creds.token,
-                'refresh_token': creds.refresh_token,
-                'expires_in': creds.expiry.isoformat()
-            }), 200
-        
         return redirect(url_for('index'))
     except Exception as e:
         logger.error(f"Error processing OAuth callback: {e}")
@@ -262,7 +178,8 @@ def get_calendar_events():
 @app.route('/api/tasklists', methods=['GET'])
 @login_required
 def get_tasklists():
-    tasklists = list(tasklists_collection.find({}, {'_id': 0}))
+    tasklists = db.tasklists.find()
+    tasklists = [{"id": str(tasklist["id"]), "title": tasklist["title"]} for tasklist in tasklists]
     return jsonify(tasklists), 200
 
 # Маршрут для получения задач
