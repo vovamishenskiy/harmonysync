@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';
 import CalendarEvents from './components/CalendarEvents';
+import { auth, provider } from './firebase';
 import './index.css';
 
 function App() {
@@ -34,15 +35,37 @@ function App() {
     checkAuth();
   }, []);
 
+  // Функция для входа через Firebase
+  const signInWithGoogle = async () => {
+    try {
+      const result = await auth.signInWithPopup(provider);
+      const idToken = await result.user.getIdToken();
+
+      // Отправляем ID Token на сервер
+      const response = await axios.post('/api/firebase-login', { id_token: idToken });
+      if (response.data.message === "User authenticated successfully") {
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
+
   // Если пользователь не авторизован, показываем страницу входа
   if (!isAuthenticated) {
     return (
       <div className="App">
-        <h1>HarmonySync</h1>
-        <p>Для доступа к приложению выполните авторизацию через Google.</p>
-        <a href="/login" className="login-button">
-          Войти через Google
-        </a>
+        <div className="login-container">
+          <h1>HarmonySync</h1>
+          <p>Для доступа к приложению выполните авторизацию через Google.</p>
+          <div className="login-btns">
+            <a href="/login" className="login-button">
+              Войти через Google
+            </a>
+            <button onClick={signInWithGoogle}>Войти через Google (Android)</button>
+          </div>
+        </div>
       </div>
     );
   }

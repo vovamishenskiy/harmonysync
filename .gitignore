@@ -47,3 +47,7 @@ render.yaml
 logs/
 tmp/
 frontend/android/app/src/androidTest
+frontend/src/firebase.js
+google-services.json
+frontend/harmonysync.apk
+frontend/my-release-key.jks

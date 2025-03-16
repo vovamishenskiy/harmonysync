@@ -12,6 +12,8 @@ from pymongo import MongoClient
 from uuid import uuid4
 import threading
 import time
+import firebase_admin
+from firebase_admin import auth as firebase_auth, credentials
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +51,7 @@ client = MongoClient(
 db = client['harmonysync']
 tasklists_collection = db['tasklists']  # Коллекция для списков задач
 tasks_collection = db['tasks']  # Коллекция для задач
+users_collection = db["users"] # Коллекция для пользователей
 
 # Функция для инициализации базы данных
 def initialize_db():
@@ -56,6 +59,11 @@ def initialize_db():
         tasklists_collection.insert_one({"id": str(uuid4()), "title": "Мои задачи"})
     if not tasklists_collection.find_one({"title": "💸"}):
         tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
+
+# Firebase
+cred = credentials.Certificate("../google-services.json")
+firebase_admin.initialize_app(cred)
+auth = firebase_auth
 
 # Декоратор для проверки авторизации пользователя
 def login_required(f):
@@ -101,6 +109,50 @@ def login():
     except Exception as e:
         logger.error(f"Error during login: {e}")
         return f"Login error: {e}", 500
+
+@app.route("/api/firebase-login", methods=["POST"])
+def firebase_login():
+    data = request.json
+    id_token = data.get("id_token")
+    if not id_token:
+        return jsonify({"error": "Missing Firebase ID Token"}), 400
+
+    try:
+        # Проверяем токен Firebase
+        decoded_token = auth.verify_id_token(id_token)
+        user_uid = decoded_token["uid"]
+        email = decoded_token.get("email", "")
+        name = decoded_token.get("name", "")
+        photo_url = decoded_token.get("picture", "")
+
+        # Проверяем, есть ли пользователь в базе данных
+        user = users_collection.find_one({"uid": user_uid})
+        if not user:
+            # Если пользователя нет, создаем нового
+            new_user = {
+                "uid": user_uid,
+                "email": email,
+                "name": name,
+                "photo_url": photo_url,
+                "created_at": datetime.now().isoformat()
+            }
+            users_collection.insert_one(new_user)
+            user = new_user
+
+        # Возвращаем данные пользователя
+        return jsonify({
+            "message": "User authenticated successfully",
+            "user": {
+                "uid": user["uid"],
+                "email": user["email"],
+                "name": user["name"],
+                "photo_url": user["photo_url"]
+            }
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Firebase login error: {e}")
+        return jsonify({"error": "Invalid Firebase ID Token"}), 401
 
 # Маршрут для обработки колбэка OAuth
 @app.route('/oauth2callback')
