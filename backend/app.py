@@ -61,7 +61,7 @@ def initialize_db():
         tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
 
 # Firebase
-cred = credentials.Certificate("../google-services.json")
+cred = credentials.Certificate("google-services.json")
 firebase_admin.initialize_app(cred)
 auth = firebase_auth
 
