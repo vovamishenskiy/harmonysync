@@ -38,7 +38,7 @@ function App() {
   // Функция для входа через Firebase
   const signInWithGoogle = async () => {
     try {
-      const result = await auth.signInWithPopup(provider);
+      const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
       // Отправляем ID Token на сервер
