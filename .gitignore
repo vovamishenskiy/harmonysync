@@ -51,3 +51,4 @@ frontend/src/firebase.js
 google-services.json
 frontend/harmonysync.apk
 frontend/my-release-key.jks
+frontend/src/firebase.ts

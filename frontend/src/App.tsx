@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';
 import CalendarEvents from './components/CalendarEvents';
-import { auth, provider } from './firebase';
+import { auth, provider, signInWithPopup } from './firebase';
 import './index.css';
 
 function App() {
