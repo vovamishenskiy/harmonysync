@@ -4,6 +4,7 @@ import axios from 'axios';
 import TasksList from './components/TasksList';
 import CalendarEvents from './components/CalendarEvents';
 import { auth, provider, signInWithPopup } from './firebase';
+import { Browser } from '@capacitor/browser';
 import './index.css';
 
 function App() {
@@ -37,17 +38,23 @@ function App() {
 
   // Функция для входа через Firebase
   const signInWithGoogle = async () => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
+    const clientId = "353222475440-5d5tknk0fvfvo5drmv701ljhv5krmf9j.apps.googleusercontent.com";
+    const redirectUri = "https://accounts.google.com/o/oauth2/auth";
 
-      // Отправляем ID Token на сервер
-      const response = await axios.post('/api/firebase-login', { id_token: idToken });
-      if (response.data.message === "User authenticated successfully") {
-        setIsAuthenticated(true);
-      }
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&scope=email profile`;
+
+    try {
+      // Открываем Google Login во встроенном браузере
+      await Browser.open({ url: authUrl });
+
+      // Ожидаем редиректа после входа
+      Browser.addListener('browserFinished', async () => {
+        console.log("Вход выполнен, можно получать токен!");
+        // Тут можно обработать токен после логина
+      });
+
     } catch (error) {
-      console.error("Error signing in with Google:", error);
+      console.error("Ошибка входа:", error);
     }
   };
 
