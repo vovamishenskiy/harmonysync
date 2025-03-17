@@ -14,6 +14,7 @@ import threading
 import time
 import firebase_admin
 from firebase_admin import auth as firebase_auth, credentials
+import requests
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -153,6 +154,23 @@ def firebase_login():
     except Exception as e:
         logger.error(f"Firebase login error: {e}")
         return jsonify({"error": "Invalid Firebase ID Token"}), 401
+
+GOOGLE_CLIENT_ID = "353222475440-5d5tknk0fvfvo5drmv701ljhv5krmf9j.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+REDIRECT_URI = "app://auth"
+
+def exchange_code_for_token(auth_code):
+    url = "https://oauth2.googleapis.com/token"
+    data = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "code": auth_code,
+        "grant_type": "authorization_code",
+        "redirect_uri": REDIRECT_URI
+    }
+
+    response = requests.post(url, data=data)
+    return response.json()
 
 # Маршрут для обработки колбэка OAuth
 @app.route('/oauth2callback')
