@@ -39,15 +39,15 @@ function App() {
   // Функция для входа через Firebase
   const signInWithGoogle = async () => {
     const clientId = "353222475440-5d5tknk0fvfvo5drmv701ljhv5krmf9j.apps.googleusercontent.com";
-    const redirectUri = "https://accounts.google.com/o/oauth2/auth";
+    const redirectUri = "https://harmonysync.ru/oauth2callback";
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-    `client_id=${clientId}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&response_type=code` +  
-    `&scope=email%20profile%20openid` +
-    `&access_type=offline` + 
-    `&prompt=consent`;
+      `client_id=${clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=email%20profile%20openid&` +
+      `access_type=offline&` +
+      `prompt=consent`;
 
     try {
       // Открываем Google Login во встроенном браузере
@@ -73,10 +73,7 @@ function App() {
           <h1>HarmonySync</h1>
           <p>Для доступа к приложению выполните авторизацию через Google.</p>
           <div className="login-btns">
-            <a href="/login" className="login-button">
-              Войти через Google
-            </a>
-            <button onClick={signInWithGoogle}>Войти через Google (Android)</button>
+            <button onClick={signInWithGoogle}>Войти через Google</button>
           </div>
         </div>
       </div>
