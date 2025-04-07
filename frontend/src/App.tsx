@@ -41,11 +41,18 @@ function App() {
     const clientId = "353222475440-5d5tknk0fvfvo5drmv701ljhv5krmf9j.apps.googleusercontent.com";
     const redirectUri = "https://harmonysync.ru/oauth2callback";
 
+    const scopes = [
+      "openid",
+      "email",
+      "profile",
+      "https://www.googleapis.com/auth/calendar"
+    ];
+
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${clientId}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `response_type=code&` +
-      `scope=email%20profile%20openid&` +
+      `scope=${encodeURIComponent(scopes.join(" "))}&` +
       `access_type=offline&` +
       `prompt=consent`;
 
