@@ -97,8 +97,9 @@ def login():
     try:
         print(f"Запрос: {request.url}")
         flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES,
-            redirect_uri=f"https://harmonysync.ru/oauth2callback"
+            'credentials.json',
+            SCOPES,
+            redirect_uri="https://harmonysync.ru/oauth2callback"
         )
         authorization_url, state = flow.authorization_url(
             access_type='offline',
