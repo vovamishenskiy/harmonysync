@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';
 import CalendarEvents from './components/CalendarEvents';
+// import { auth, provider, signInWithPopup } from './firebase';
+import { Browser } from '@capacitor/browser';
 import './index.css';
 
 function App() {
@@ -34,15 +36,53 @@ function App() {
     checkAuth();
   }, []);
 
+  // Функция для входа через Firebase
+  const signInWithGoogle = async () => {
+    const clientId = "353222475440-5d5tknk0fvfvo5drmv701ljhv5krmf9j.apps.googleusercontent.com";
+    const redirectUri = "https://harmonysync.ru/oauth2callback";
+
+    const SCOPES = [
+      "https://www.googleapis.com/auth/calendar",
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${encodeURIComponent(SCOPES.join(" "))}&` +
+      `access_type=offline&` +
+      `prompt=consent`;
+
+    try {
+      // Открываем Google Login во встроенном браузере
+      await Browser.open({ url: authUrl });
+
+      // Ожидаем редиректа после входа
+      Browser.addListener('browserFinished', async () => {
+        console.log("Вход выполнен, можно получать токен!");
+        // Тут можно обработать токен после логина
+      });
+
+    } catch (error) {
+      console.error("Ошибка входа:", error);
+    }
+  };
+
+
   // Если пользователь не авторизован, показываем страницу входа
   if (!isAuthenticated) {
     return (
       <div className="App">
-        <h1>HarmonySync</h1>
-        <p>Для доступа к приложению выполните авторизацию через Google.</p>
-        <a href="/login" className="login-button">
-          Войти через Google
-        </a>
+        <div className="login-container">
+          <h1>HarmonySync</h1>
+          <p>Для доступа к приложению выполните авторизацию через Google.</p>
+          <div className="login-btns">
+            <button onClick={signInWithGoogle}>Войти через Google</button>
+          </div>
+        </div>
       </div>
     );
   }
