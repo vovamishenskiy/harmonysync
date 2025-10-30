@@ -12,6 +12,8 @@ from pymongo import MongoClient
 from uuid import uuid4
 import threading
 import time
+from bson import ObjectId
+from flask.json import JSONEncoder
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -40,6 +42,14 @@ class DateTimeEncoder(json.JSONEncoder):
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
+
+class MongoJSONEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
+
+app.json_encoder = MongoJSONEncoder
 
 # Подключение к MongoDB
 client = MongoClient(
@@ -172,6 +182,9 @@ def get_calendar_events():
 @login_required
 def get_tasklists():
     tasklists = list(tasklists_collection.find({}, {'_id': 0}))
+    for tasklist in tasklists:
+        if 'id' in tasklist and isinstance(tasklist['id'], ObjectId):
+            tasklist['id'] = str(tasklist['id'])
     return jsonify(tasklists), 200
 
 # Маршрут для получения задач
@@ -182,6 +195,10 @@ def get_tasks():
     if not list_id:
         return jsonify({'error': 'Missing list_id parameter'}), 400
     tasks = list(tasks_collection.find({"list_id": list_id}, {'_id': 0}))
+    # Преобразование ObjectId
+    for task in tasks:
+        if 'id' in task and isinstance(task['id'], ObjectId):
+            task['id'] = str(task['id'])
     return jsonify(tasks), 200
 
 # Маршрут для создания задачи
