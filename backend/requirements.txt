@@ -1,8 +1,9 @@
-Flask==2.3.3
+Flask==3.1.2
 google-auth==2.23.0
 google-api-python-client==2.98.0
 google-auth-oauthlib==1.1.0
 pymongo==4.5.0
-pytz==2023.3
+pytz==2025.2
 bson==0.5.10
 flask.json==0.4.0
+gunicorn==23.0.0
