@@ -3,26 +3,34 @@ version: '3.8'
 services:
   backend:
     image: oteslifar/harmonysync-app:latest
+    expose:
+      - "5000"
     environment:
-      FLASK_SECRET_KEY: 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
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY} 
+      - MONGO_URI=${MONGO_URI}
     networks:
       - app-network
+    restart: unless-stopped
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.nginx
+    expose:
+      - "80"
     networks:
       - app-network
+    restart: unless-stopped
 
   caddy:
-    image: caddy:latest
+    image: caddy:2-alpine
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"  # HTTP/3
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./frontend/dist:/usr/share/caddy/html
+      - ./frontend/dist:/usr/share/caddy/html:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -30,6 +38,7 @@ services:
       - frontend
     networks:
       - app-network
+    restart: unless-stopped
 
 networks:
   app-network:

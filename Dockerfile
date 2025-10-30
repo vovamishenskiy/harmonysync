@@ -1,31 +1,31 @@
-# harmonysync/Dockerfile
-FROM node:18-alpine as frontend-builder
-
+# === Frontend Build Stage ===
+FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
-
-COPY frontend/package.json frontend/package-lock.json ./
+COPY frontend/package*.json ./
 RUN npm install
-
 COPY frontend/. .
-
-# Сборка фронтенда
 RUN npm run build
 
-# Бэкенд
+# === Backend Stage ===
 FROM python:3.9-slim
+WORKDIR /app
 
-WORKDIR /app/backend
-
-# Установка зависимостей для бэкенда
+# Backend deps
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование файлов бэкенда
-# COPY backend/token.json .
+# Backend code
 COPY backend/ .
 
-# Копирование собранного фронтенда
-COPY --from=frontend-builder /app/frontend/dist /app/backend/static
+# Копируй собранный фронтенд в Flask static
+COPY --from=frontend-builder /app/frontend/dist ./static
 
-# Настройка Gunicorn для обслуживания фронтенда и бэкенда
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--chdir", "/app/backend", "app:app", "--timeout", "120"]
+# Копируй credentials.json (ОБЯЗАТЕЛЬНО!)
+COPY credentials.json .
+
+EXPOSE 5000
+
+ENV FLASK_SECRET_KEY=change_me_in_production
+ENV PYTHONUNBUFFERED=1
+
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--timeout", "120", "--workers", "3", "--threads", "2"]
