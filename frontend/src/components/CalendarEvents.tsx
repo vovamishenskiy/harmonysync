@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useCalendarData } from '../hooks/useCalendarData';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
+import CalendarSkeleton from './CalendarSkeleton';
 
 const CalendarEvents: React.FC = () => {
   const today = new Date();
@@ -24,7 +26,7 @@ const CalendarEvents: React.FC = () => {
 
   const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-  if (isLoading) return <p>Загрузка событий...</p>;
+  if (isLoading) return <CalendarSkeleton />;
   if (error) return <p>{error}</p>;
 
   return (

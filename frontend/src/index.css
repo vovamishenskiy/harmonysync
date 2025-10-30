@@ -302,6 +302,73 @@ body {
 }
 
 /* Стили для правого блока (календарь) */
+.skeleton {
+  opacity: 0.7;
+  animation: skeleton-loading 1s linear infinite alternate;
+}
+
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skeleton-nav {
+  width: 30px;
+  height: 30px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton-month {
+  width: 150px;
+  height: 24px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton-weekday {
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton-day {
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton-event {
+  margin-bottom: 1rem;
+}
+
+.skeleton-summary {
+  width: 80%;
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-time {
+  width: 60%;
+  height: 16px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: hsl(200, 20%, 70%);
+  }
+
+  100% {
+    background-color: hsl(200, 20%, 95%);
+  }
+}
+
 .calendar-section {
   background-color: var(--section-color);
   border-radius: 12px;
@@ -324,6 +391,21 @@ body {
 .calendar-header .calendar-month {
   font-weight: 400;
   text-transform: capitalize;
+}
+
+.calendar-header .calendar-nav {
+  border: 0;
+  background-color: transparent;
+  width: 31px;
+  padding-top: 3px;
+  cursor: pointer;
+  transition: 0.35s ease all;
+  scale: 1;
+}
+
+.calendar-header .calendar-nav:hover {
+  transition: 0.35s ease all;
+  scale: 1.15;
 }
 
 .calendar-grid {
