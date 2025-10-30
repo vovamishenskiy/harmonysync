@@ -77,9 +77,9 @@ def save_credentials(creds):
     session['credentials'] = json.loads(creds.to_json())
 
 # Главная страница
-@app.route('/')
-def index():
-    return app.send_static_file('index.html') if get_credentials() else app.send_static_file('login.html')
+# @app.route('/')
+# def index():
+#     return app.send_static_file('index.html') if get_credentials() else app.send_static_file('login.html')
 
 # Маршрут для входа через Google OAuth
 @app.route('/login')
