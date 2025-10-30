@@ -20,12 +20,10 @@ const CalendarSkeleton: React.FC = () => {
             </div>
 
             <ul className="calendar-events-list">
-                {Array.from({ length: 3 }).map((_, index) => (
-                    <li key={index} className="skeleton-event">
-                        <div className="skeleton-summary" />
-                        <div className="skeleton-time" />
-                    </li>
-                ))}
+                <li className="skeleton-event">
+                    <div className="skeleton-summary" />
+                    <div className="skeleton-time" />
+                </li>
             </ul>
         </div>
     );
