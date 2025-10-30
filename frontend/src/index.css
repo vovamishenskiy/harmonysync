@@ -350,13 +350,13 @@ body {
 
 .calendar-day.current-day {
   font-weight: 700;
-  background-color: #fca3b7;
+  background-color: #d9534f;
   color: #fff;
-  border-color: #fca3b7;
+  border-color: #d9534f;
 }
 
 .calendar-day.current-day:hover {
-  background-color: #fca3b7;
+  background-color: #d9534f;
 }
 
 .calendar-day:hover {
