@@ -5,7 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import os
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 import pytz
 import logging
 from pymongo import MongoClient
@@ -13,7 +13,6 @@ from uuid import uuid4
 import threading
 import time
 from bson import ObjectId
-from flask.json import JSONEncoder
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +42,7 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
 
-class MongoJSONEncoder(JSONEncoder):
+class MongoJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
@@ -86,17 +85,12 @@ def get_credentials():
 def save_credentials(creds):
     session['credentials'] = json.loads(creds.to_json())
 
-# Главная страница
-# @app.route('/')
-# def index():
-#     return app.send_static_file('index.html') if get_credentials() else app.send_static_file('login.html')
-
 # Маршрут для входа через Google OAuth
 @app.route('/login')
 def login():
     flow = InstalledAppFlow.from_client_secrets_file(
         'credentials.json', SCOPES,
-        redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        redirect_uri="https://harmonysync.ru/oauth2callback"
     )
     authorization_url, state = flow.authorization_url(
         access_type='offline',
@@ -115,7 +109,7 @@ def oauth2callback():
     flow = InstalledAppFlow.from_client_secrets_file(
         'credentials.json', SCOPES,
         state=state,
-        redirect_uri=f"https://harmonysync.ru/oauth2callback"
+        redirect_uri="https://harmonysync.ru/oauth2callback"
     )
     try:
         flow.fetch_token(authorization_response=request.url)
@@ -132,11 +126,11 @@ def logout():
     try:
         session.clear()
         logger.info("Session cleared successfully.")
-        return redirect(url_for('index'))
+        return redirect("/")
     except Exception as e:
         logger.error(f"Error during logout: {e}")
         return "An error occurred during logout.", 500
-    
+
 @app.route('/api/auth/check', methods=['GET'])
 def check_auth():
     if get_credentials():
