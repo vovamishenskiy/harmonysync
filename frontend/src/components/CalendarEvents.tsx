@@ -54,7 +54,7 @@ const CalendarEvents: React.FC = () => {
           return (
             <div
               key={dayKey}
-              className={`calendar-day ${!isCurrentMonth ? 'other-month-day' : ''} ${isToday ? 'current-day' : ''} ${eventDays[dayKey] ? 'has-event' : ''}`}
+              className={`calendar-day ${!isCurrentMonth ? 'prev-month-day' : ''} ${isToday ? 'current-day' : ''} ${eventDays[dayKey] ? 'has-event' : ''}`}
             >
               {date.getDate()}
             </div>

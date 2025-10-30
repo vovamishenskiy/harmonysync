@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from 'react';
 
 interface CalendarDay {
@@ -5,7 +6,6 @@ interface CalendarDay {
     isCurrentMonth: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useCalendarData = (currentYear: number, currentMonth: number, events: any[]) => {
     const today = useMemo(() => new Date(), []);
 
@@ -32,9 +32,14 @@ export const useCalendarData = (currentYear: number, currentMonth: number, event
             }
         }
 
+        const currentMonthDays: CalendarDay[] = daysInMonth.map((day) => ({ date: day, isCurrentMonth: true }));
+
+        const totalDays = prevMonthDays.length + currentMonthDays.length;
+        let remainingDays = 0;
+        if (totalDays % 7 !== 0) {
+            remainingDays = 7 - (totalDays % 7);
+        }
         const nextMonthDays: CalendarDay[] = [];
-        const totalDays = prevMonthDays.length + daysInMonth.length;
-        const remainingDays = 42 - totalDays; // 6 недель x 7 дней = 42 клетки
         if (remainingDays > 0) {
             const nextMonthFirstDay = new Date(currentYear, currentMonth + 1, 1);
             for (let i = 1; i <= remainingDays; i++) {
@@ -43,11 +48,7 @@ export const useCalendarData = (currentYear: number, currentMonth: number, event
             }
         }
 
-        return [
-            ...prevMonthDays,
-            ...daysInMonth.map((day) => ({ date: day, isCurrentMonth: true })),
-            ...nextMonthDays,
-        ];
+        return [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
     }, [currentYear, currentMonth]);
 
     const eventDays = useMemo(() => events.reduce((acc: Record<string, boolean>, event) => {

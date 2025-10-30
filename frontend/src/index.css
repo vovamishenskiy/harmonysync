@@ -312,9 +312,18 @@ body {
 }
 
 .calendar-header {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.calendar-header .calendar-month {
+  font-weight: 400;
+  text-transform: capitalize;
 }
 
 .calendar-grid {
