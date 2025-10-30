@@ -26,7 +26,6 @@ const CalendarEvents: React.FC = () => {
 
   const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-  return <CalendarSkeleton />;
   if (isLoading) return <CalendarSkeleton />;
   if (error) return <p>{error}</p>;
 
