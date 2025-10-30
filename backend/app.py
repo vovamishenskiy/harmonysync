@@ -111,7 +111,7 @@ def oauth2callback():
         flow.fetch_token(authorization_response=request.url)
         creds = flow.credentials
         save_credentials(creds)
-        return redirect('/')
+        return redirect(url_for('index'))
     except Exception as e:
         logger.error(f"Error processing OAuth callback: {e}")
         return f"Error processing OAuth callback: {e}", 500
