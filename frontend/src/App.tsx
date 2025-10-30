@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';

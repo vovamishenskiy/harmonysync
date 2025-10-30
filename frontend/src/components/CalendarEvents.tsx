@@ -1,71 +1,40 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
-import { fetchCalendarEvents } from '../api/api';
+import React, { useState } from 'react';
+import { useCalendarData } from '../hooks/useCalendarData';
+import { useCalendarEvents } from '../hooks/useCalendarEvents';
 
 const CalendarEvents: React.FC = () => {
-  const [events, setEvents] = useState<any[]>([]);
-  const [currentMonthEvents, setCurrentMonthEvents] = useState<any[]>([]);
-
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const data = await fetchCalendarEvents();
-        if (Array.isArray(data)) {
-          setEvents(data);
-          setCurrentMonthEvents(data);
-        } else {
-          console.error('Invalid data format for calendar events:', data);
-          setEvents([]);
-          setCurrentMonthEvents([]);
-        }
-      } catch (error) {
-        console.error('Error fetching calendar events:', error);
-        setEvents([]);
-        setCurrentMonthEvents([]);
-      }
-    };
-    loadEvents();
-  }, []);
-
   const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
 
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  const daysInMonth = Array.from(
-    { length: lastDayOfMonth.getDate() },
-    (_, i) => new Date(today.getFullYear(), today.getMonth(), i + 1)
-  );
+  const { events, isLoading, error } = useCalendarEvents(currentYear, currentMonth);
+  const { calendarData, eventDays, today: currentToday, monthName } = useCalendarData(currentYear, currentMonth, events);
 
-  const getWeekdayIndex = (date: Date) => {
-    const dayIndex = date.getDay();
-    return dayIndex === 0 ? 6 : dayIndex - 1;
+  const handlePrevMonth = () => {
+    const newMonth = currentMonth - 1;
+    setCurrentMonth(newMonth >= 0 ? newMonth : 11);
+    if (newMonth < 0) setCurrentYear(currentYear - 1);
   };
 
-  const startDayOfWeek = getWeekdayIndex(firstDayOfMonth);
-  const prevMonthDays = [];
-  if (startDayOfWeek !== 0) {
-    const prevMonthLastDay = new Date(today.getFullYear(), today.getMonth(), 0);
-    for (let i = startDayOfWeek; i > 0; i--) {
-      prevMonthDays.push(new Date(prevMonthLastDay.getFullYear(), prevMonthLastDay.getMonth(), prevMonthLastDay.getDate() - i + 1));
-    }
-  }
-
-  const calendarDays = [
-    ...prevMonthDays.map((day) => ({ date: day, isCurrentMonth: false })),
-    ...daysInMonth.map((day) => ({ date: day, isCurrentMonth: true })),
-  ];
-
-  const eventDays = events.reduce((acc: Record<string, boolean>, event) => {
-    const date = new Date(event.start.dateTime || event.start.date);
-    const dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
-    acc[dayKey] = true;
-    return acc;
-  }, {});
+  const handleNextMonth = () => {
+    const newMonth = currentMonth + 1;
+    setCurrentMonth(newMonth <= 11 ? newMonth : 0);
+    if (newMonth > 11) setCurrentYear(currentYear + 1);
+  };
 
   const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
+  if (isLoading) return <p>Загрузка событий...</p>;
+  if (error) return <p>{error}</p>;
+
   return (
     <div className="calendar-section">
+      <div className="calendar-header">
+        <button onClick={handlePrevMonth} className="calendar-nav">◀</button>
+        <h2 className="calendar-month">{monthName} {currentYear}</h2>
+        <button onClick={handleNextMonth} className="calendar-nav">▶</button>
+      </div>
+
       <div className="calendar-weekdays">
         {weekdays.map((day) => (
           <div key={day} className="calendar-weekday">
@@ -75,18 +44,17 @@ const CalendarEvents: React.FC = () => {
       </div>
 
       <div className="calendar-grid">
-        {calendarDays.map(({ date, isCurrentMonth }) => {
+        {calendarData.map(({ date, isCurrentMonth }) => {
           const dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
           const isToday =
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear();
+            date.getDate() === currentToday.getDate() &&
+            date.getMonth() === currentToday.getMonth() &&
+            date.getFullYear() === currentToday.getFullYear();
 
           return (
             <div
               key={dayKey}
-              className={`calendar-day ${!isCurrentMonth ? 'prev-month-day' : ''
-                } ${isToday ? 'current-day' : ''} ${eventDays[dayKey] ? 'has-event' : ''}`}
+              className={`calendar-day ${!isCurrentMonth ? 'other-month-day' : ''} ${isToday ? 'current-day' : ''} ${eventDays[dayKey] ? 'has-event' : ''}`}
             >
               {date.getDate()}
             </div>
@@ -95,13 +63,13 @@ const CalendarEvents: React.FC = () => {
       </div>
 
       <ul className="calendar-events-list">
-        {Array.isArray(currentMonthEvents) && currentMonthEvents.length > 0 ? (
-          currentMonthEvents.map((event) => (
+        {events.length > 0 ? (
+          events.map((event) => (
             <li key={event.id} className="calendar-event">
               <span className="calendar-event-summary">{event.summary}</span>
               <br />
               <span className="calendar-event-time">
-                {new Date(event.start.dateTime || event.start.date).toLocaleString()}
+                {new Date(event.start.dateTime || event.start.date).toLocaleString('ru-RU')}
               </span>
             </li>
           ))
