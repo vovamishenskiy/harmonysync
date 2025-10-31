@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import TasksList from './components/TasksList';
@@ -10,30 +11,50 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [user, setUser] = useState<any>(null);
-  const [, setUserLoading] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Получение пользователя
+  // === Проверка авторизации ===
+  const checkAuthentication = async () => {
+    setIsLoading(true);
+    try {
+      await axios.get('/api/auth/check', { withCredentials: true });
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        setUser(null);
+      } else {
+        console.error('Auth check error:', error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // === Начальная проверка ===
   useEffect(() => {
-    const fetchUser = async () => {
-      if (isAuthenticated) {
-        setUserLoading(true);
+    checkAuthentication();
+  }, []);
+
+  // === Получение пользователя ===
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchUser = async () => {
         try {
           const response = await axios.get('/api/user');
           setUser(response.data);
         } catch (error) {
           console.error('Error fetching user: ', error);
-        } finally {
-          setUserLoading(false);
         }
-      }
-    };
-    fetchUser();
+      };
+      fetchUser();
+    } else {
+      setUser(null);
+    }
   }, [isAuthenticated]);
 
-  // Применение темы
+  // === Применение темы ===
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -43,63 +64,18 @@ function App() {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // Проверка авторизации
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await axios.get('/api/auth/check', { withCredentials: true });
-        setIsAuthenticated(true);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  // Вход через Google (OAuth)
-  const signInWithGoogle = () => {
-    window.location.href = '/login';
-  };
-
-  const checkAuthentication = async () => {
-    setIsLoading(true);
-    try {
-      await axios.get('/api/auth/check', { withCredentials: true });
-      setIsAuthenticated(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Выход
+  // === Выход ===
   const handleLogout = async () => {
     try {
       await axios.get('/api/logout', { withCredentials: true });
-      setIsAuthenticated(false);
-      setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       await checkAuthentication();
-      // window.location.href = '/';
     }
   };
 
-  useEffect(() => {
-    checkAuthentication();
-  }, []);
-
-  // Закрытие меню при клике вне
+  // === Закрытие меню при клике вне ===
   useEffect(() => {
     const handleClickOutside = () => setIsUserMenuOpen(false);
     if (isUserMenuOpen) {
@@ -108,7 +84,12 @@ function App() {
     }
   }, [isUserMenuOpen]);
 
-  // Загрузка
+  // === Вход через Google ===
+  const signInWithGoogle = () => {
+    window.location.href = '/login';
+  };
+
+  // === Загрузка ===
   if (isLoading) {
     return (
       <div className="App loading">
@@ -117,7 +98,7 @@ function App() {
     );
   }
 
-  // Страница входа
+  // === Страница входа ===
   if (!isAuthenticated) {
     return (
       <div className="App">
@@ -140,27 +121,38 @@ function App() {
     );
   }
 
-  // Основной интерфейс
+  // === Основной интерфейс ===
   return (
     <div className="App">
       <header className="app-header">
         <div className="logo-title">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="48" height="48" rx="12" fill="#68B6FF" />
-            <path d="M22.2812 11V14M36.7188 11V14M41.875 32V17C41.875 16.2044 41.5491 15.4413 40.9689 14.8787C40.3887 14.3161 39.6018 14 38.7812 14H20.2188C19.3982 14 18.6113 14.3161 18.0311 14.8787C17.4509 15.4413 17.125 16.2044 17.125 17V24.5M41.875 32C41.875 32.7956 41.5491 33.5587 40.9689 34.1213C40.3887 34.6839 39.6018 35 38.7812 35H20.2188C19.3982 35 18.6113 34.6839 18.0311 34.1213M41.875 32V22C41.875 21.2044 41.5491 20.4413 40.9689 19.8787C40.3887 19.3161 39.6018 19 38.7812 19H20.2188C19.3982 19 18.6113 19.3161 18.0311 19.8787C17.4509 20.4413 17.125 21.2044 17.125 22V24.5M17.125 24.5V28.5M29.5 24H29.511V24.0107H29.5V24ZM29.5 27H29.511V27.0107H29.5V27ZM29.5 30H29.511V30.0107H29.5V30ZM26.4062 27H26.4173V27.0107H26.4062V27ZM26.4062 30H26.4173V30.0107H26.4062V30ZM23.3125 27H23.3235V27.0107H23.3125V27ZM23.3125 30H23.3235V30.0107H23.3125V30ZM32.5938 24H32.6048V24.0107H32.5938V24ZM32.5938 27H32.6048V27.0107H32.5938V27ZM32.5938 30H32.6048V30.0107H32.5938V30ZM35.6875 24H35.6985V24.0107H35.6875V24ZM35.6875 27H35.6985V27.0107H35.6875V27Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M6.6875 32.05L12.9375 38.05L22.3125 24.55" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M22.2812 11V14M36.7188 11V14M41.875 32V17C41.875 16.2044 41.5491 15.4413 40.9689 14.8787C40.3887 14.3161 39.6018 14 38.7812 14H20.2188C19.3982 14 18.6113 14.3161 18.0311 14.8787C17.4509 15.4413 17.125 16.2044 17.125 17V24.5M41.875 32C41.875 32.7956 41.5491 33.5587 40.9689 34.1213C40.3887 34.6839 39.6018 35 38.7812 35H20.2188C19.3982 35 18.6113 34.6839 18.0311 34.1213M41.875 32V22C41.875 21.2044 41.5491 20.4413 40.9689 19.8787C40.3887 19.3161 39.6018 19 38.7812 19H20.2188C19.3982 19 18.6113 19.3161 18.0311 19.8787C17.4509 20.4413 17.125 21.2044 17.125 22V24.5M17.125 24.5V28.5M29.5 24H29.511V24.0107H29.5V24ZM29.5 27H29.511V27.0107H29.5V27ZM29.5 30H29.511V30.0107H29.5V30ZM26.4062 27H26.4173V27.0107H26.4062V27ZM26.4062 30H26.4173V30.0107H26.4062V30ZM23.3125 27H23.3235V27.0107H23.3125V27ZM23.3125 30H23.3235V30.0107H23.3125V30ZM32.5938 24H32.6048V24.0107H32.5938V24ZM32.5938 27H32.6048V27.0107H32.5938V27ZM32.5938 30H32.6048V30.0107H32.5938V30ZM35.6875 24H35.6985V24.0107H35.6875V24ZM35.6875 27H35.6985V27.0107H35.6875V27Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6.6875 32.05L12.9375 38.05L22.3125 24.55" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <h1 className="main-title">Harmonysync</h1>
         </div>
+
         <div className="header-actions">
           {user && (
-            <div className="user-info" onClick={(e) => { e.stopPropagation(); setIsUserMenuOpen(!isUserMenuOpen); }}>
-              <svg className={`theme-icon ${theme === 'dark' ? 'dark' : 'light'}`} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation"><path d="M7 15h10a2 2 0 0 1 2 2v4h2v-4a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v4h2v-4a2 2 0 0 1 2-2Z"></path><path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+            <div
+              className="user-info"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsUserMenuOpen(!isUserMenuOpen);
+              }}
+            >
+              <svg className={`theme-icon ${theme === 'dark' ? 'dark' : 'light'}`} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation">
+                <path d="M7 15h10a2 2 0 0 1 2 2v4h2v-4a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v4h2v-4a2 2 0 0 1 2-2Z"></path>
+                <path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" clipRule="evenodd" fillRule="evenodd"></path>
+              </svg>
               <span>{user.email}</span>
             </div>
           )}
+
           {isUserMenuOpen && (
-            <div className="user-menu" onClick={(e) => { e.stopPropagation(); }}>
+            <div className="user-menu" onClick={(e) => e.stopPropagation()}>
               <button onClick={toggleTheme} className="theme-button" aria-label="Переключить тему">
                 {theme === 'light' ? (
                   <>
@@ -178,8 +170,12 @@ function App() {
                   </>
                 )}
               </button>
+
               <button onClick={handleLogout} className={`logout-button ${theme === 'dark' ? 'dark' : 'light'}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation"><path d="M3.333 2a1.327 1.327 0 0 0-1.06.524 1.327 1.327 0 0 0-.273.81v17.333C2 21.403 2.597 22 3.333 22H15a1 1 0 1 0 0-2H4V4h11a1 1 0 1 0 0-2H3.333Z"></path><path d="M16.029 7.28a1.041 1.041 0 0 1 1.42 0l4.257 4.046a.92.92 0 0 1 0 1.348l-4.258 4.047a1.041 1.041 0 0 1-1.42 0 .92.92 0 0 1 0-1.349l2.546-2.418h-9.57C8.449 12.954 8 12.527 8 12c0-.527.45-.954 1.004-.954h9.57l-2.545-2.418a.92.92 0 0 1 0-1.349Z"></path></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation">
+                  <path d="M3.333 2a1.327 1.327 0 0 0-1.06.524 1.327 1.327 0 0 0-.273.81v17.333C2 21.403 2.597 22 3.333 22H15a1 1 0 1 0 0-2H4V4h11a1 1 0 1 0 0-2H3.333Z"></path>
+                  <path d="M16.029 7.28a1.041 1.041 0 0 1 1.42 0l4.257 4.046a.92.92 0 0 1 0 1.348l-4.258 4.047a1.041 1.041 0 0 1-1.42 0 .92.92 0 0 1 0-1.349l2.546-2.418h-9.57C8.449 12.954 8 12.527 8 12c0-.527.45-.954 1.004-.954h9.57l-2.545-2.418a.92.92 0 0 1 0-1.349Z"></path>
+                </svg>
                 Выйти
               </button>
             </div>
