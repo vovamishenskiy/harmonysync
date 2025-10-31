@@ -66,12 +66,18 @@ function App() {
 
   // === Выход ===
   const handleLogout = async () => {
+    setIsUserMenuOpen(false);
     try {
       await axios.get('/api/logout', { withCredentials: true });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      await checkAuthentication();
+      setIsAuthenticated(false);
+      setUser(null);
+      setIsLoading(true);
+      setTimeout(() => {
+        checkAuthentication();
+      }, 100);
     }
   };
 
