@@ -87,7 +87,18 @@ def login_required(f):
 # Получение credentials из сессии
 def get_credentials():
     creds_data = session.get('credentials')
-    return Credentials.from_authorized_user_info(creds_data, SCOPES) if creds_data else None
+    if not creds_data:
+        return None
+    try:
+        if isinstance(creds_data, str):
+            creds_dict = json.loads(creds_data)
+        else:
+            creds_dict = creds_data
+        return Credentials.from_authorized_user_info(creds_dict, SCOPES)
+    except Exception as e:
+        logger.error(f"Invalid credentials format: {e}")
+        session.pop('credentials', None)
+        return None
 
 # Сохранение credentials в сессию (как dict)
 def save_credentials(creds):
@@ -170,7 +181,12 @@ def logout():
 # Проверка авторизации
 @app.route('/api/auth/check', methods=['GET'])
 def check_auth():
-    return jsonify({'authenticated': bool(get_credentials())}), 200
+    try:
+        creds = get_credentials()
+        return jsonify({'authenticated': bool(creds)}), 200
+    except Exception as e:
+        logger.error(f"Auth check failed: {e}")
+        return jsonify({'authenticated': False}), 200
 
 # === Календарь ===
 @app.route('/api/calendar/events', methods=['GET'])
