@@ -66,6 +66,7 @@ def initialize_db():
         tasklists_collection.insert_one({"id": str(uuid4()), "title": "Мои задачи"})
     if not tasklists_collection.find_one({"title": "💸"}):
         tasklists_collection.insert_one({"id": str(uuid4()), "title": "💸"})
+    users_collection.create_index("email", unique=True)
 
 # Декоратор для проверки авторизации пользователя
 def login_required(f):
