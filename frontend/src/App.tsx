@@ -104,6 +104,8 @@ function App() {
     );
   }
 
+  console.log(isAuthenticated)
+
   // === Страница входа ===
   // if (!isAuthenticated) {
   //   return (
