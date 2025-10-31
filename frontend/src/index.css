@@ -581,6 +581,14 @@ body {
   transition: background-color 0.3s ease;
 }
 
+.logout-button.light {
+  color: #333;
+}
+
+.logout-button.dark {
+  color: #fff;
+}
+
 .logout-button:hover {
   background-color: #c63d31;
 }
