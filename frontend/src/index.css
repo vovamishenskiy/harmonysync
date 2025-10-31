@@ -58,6 +58,22 @@ body {
   font-weight: 500;
 }
 
+/* Почта пользователя */
+.theme-icon {
+  fill: currentColor;
+  transition: fill 0.2s ease;
+}
+
+/* Светлая тема */
+.theme-icon.light {
+  color: #333;
+}
+
+/* Тёмная тема */
+.theme-icon.dark {
+  color: #fff;
+}
+
 /* Стили для контейнера с задачами и календарем */
 .container {
   display: flex;
