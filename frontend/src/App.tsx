@@ -12,6 +12,7 @@ function App() {
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [user, setUser] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userLoading, setUserLoading] = useState(false);
 
   // Получение пользователя
