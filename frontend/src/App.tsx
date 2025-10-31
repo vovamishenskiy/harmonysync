@@ -90,7 +90,10 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1 className="main-title">HarmonySync</h1>
+        <div className="logo-title">
+          <img src="../public/favicon.svg" alt="" />
+          <h1 className="main-title">HarmonySync</h1>
+        </div>
         <div className="header-actions">
           <button onClick={toggleTheme} className="theme-button" aria-label="Переключить тему">
             {theme === 'light' ? (

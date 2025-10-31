@@ -59,6 +59,12 @@ const TasksList: React.FC = () => {
                 type="text"
                 value={newTaskInput}
                 onChange={(e) => setNewTaskInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTaskInput.trim()) {
+                    e.preventDefault();
+                    handleAddTask();
+                  }
+                }}
                 placeholder="Название задачи"
                 style={{ width: 'calc(100% - 80px)' }}
               />
