@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
 # Области доступа Google API
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+SCOPES = ['https://www.googleapis.com/auth/calendar', 'openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
 
 # Определение часового пояса Саратова
 saratov_tz = pytz.timezone('Europe/Saratov')
@@ -58,6 +58,7 @@ client = MongoClient(
 db = client['harmonysync']
 tasklists_collection = db['tasklists']  # Коллекция для списков задач
 tasks_collection = db['tasks']  # Коллекция для задач
+users_collection = db['users'] # Коллекция для пользователей
 
 # Функция для инициализации базы данных
 def initialize_db():
@@ -115,10 +116,37 @@ def oauth2callback():
         flow.fetch_token(authorization_response=request.url)
         creds = flow.credentials
         save_credentials(creds)
+        
+        user_info_service = build('oauth2', 'v2', credentials=creds)
+        user_info = user_info_service.userinfo().get().execute()
+        email = user_info.get('email', '')
+        
+        session['user'] = {'email': email}
+        
+        user_doc = users_collection.find_one({'email': email})
+        if not user_doc:
+            users_collection.insert_one({
+                '_id': ObjectId,
+                'email': email,
+                'created_at': datetime.now(saratov_tz).isoformat()
+            })
+            logger.info(f"New user created: {email}")
+        else:
+            logger.info(f"User {email} already exists")
+                        
         return redirect('/')
     except Exception as e:
         logger.error(f"Error processing OAuth callback: {e}")
         return f"Error processing OAuth callback: {e}", 500
+
+# Маршрут получения почты пользователя
+@app.route('/api/user', methods=["GET"])
+@login_required
+def get_user():
+    user = session.get('user', {})
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify(user), 200
 
 # Маршрут для выхода
 @app.route('/api/logout')

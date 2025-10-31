@@ -10,6 +10,27 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(false);
+
+  // Получение пользователя
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (isAuthenticated) {
+        setUserLoading(true);
+        try {
+          const response = await axios.get('/api/user');
+          setUser(response.data);
+        } catch (error) {
+          console.error('Error fetching user: ', error);
+        } finally {
+          setUserLoading(false);
+        }
+      }
+    };
+    fetchUser();
+  }, [isAuthenticated]);
 
   // Применение темы
   useEffect(() => {
@@ -99,6 +120,12 @@ function App() {
           <h1 className="main-title">Harmonysync</h1>
         </div>
         <div className="header-actions">
+          {user && (
+            <div className="user-info">
+              <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation"><path d="M7 15h10a2 2 0 0 1 2 2v4h2v-4a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v4h2v-4a2 2 0 0 1 2-2Z"></path><path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+              <span>{user.email}</span>
+            </div>
+          )}
           <button onClick={toggleTheme} className="theme-button" aria-label="Переключить тему">
             {theme === 'light' ? (
               <svg fill="none" strokeWidth="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
