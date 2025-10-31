@@ -126,20 +126,29 @@ function App() {
               <span>{user.email}</span>
             </div>
           )}
-          <button onClick={toggleTheme} className="theme-button" aria-label="Переключить тему">
-            {theme === 'light' ? (
-              <svg fill="none" strokeWidth="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"></path>
-              </svg>
-            ) : (
-              <svg fill="none" strokeWidth="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"></path>
-              </svg>
-            )}
-          </button>
-          <button onClick={handleLogout} className="logout-button">
-            Выйти
-          </button>
+          <div className="user-menu">
+            <button onClick={toggleTheme} className="theme-button" aria-label="Переключить тему">
+              {theme === 'light' ? (
+                <>
+                  <svg fill="none" strokeWidth="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"></path>
+                  </svg>
+                  <span>Тёмная тема</span>
+                </>
+              ) : (
+                <>
+                  <svg fill="none" strokeWidth="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"></path>
+                  </svg>
+                  <span>Светлая тема</span>
+                </>
+              )}
+            </button>
+            <button onClick={handleLogout} className="logout-button">
+              <svg width="24" height="24" stroke='currentColor' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation"><path d="M3.333 2a1.327 1.327 0 0 0-1.06.524 1.327 1.327 0 0 0-.273.81v17.333C2 21.403 2.597 22 3.333 22H15a1 1 0 1 0 0-2H4V4h11a1 1 0 1 0 0-2H3.333Z"></path><path d="M16.029 7.28a1.041 1.041 0 0 1 1.42 0l4.257 4.046a.92.92 0 0 1 0 1.348l-4.258 4.047a1.041 1.041 0 0 1-1.42 0 .92.92 0 0 1 0-1.349l2.546-2.418h-9.57C8.449 12.954 8 12.527 8 12c0-.527.45-.954 1.004-.954h9.57l-2.545-2.418a.92.92 0 0 1 0-1.349Z"></path></svg>
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 
