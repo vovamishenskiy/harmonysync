@@ -80,7 +80,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not get_credentials():
             logger.warning("User is not authenticated.")
-            return redirect(url_for('login'))
+            return jsonify({'error': 'Unathorized', 'authenticated': False}), 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -174,9 +174,13 @@ def get_user():
 # Выход
 @app.route('/api/logout')
 def logout():
-    session.clear()
-    logger.info("User logged out.")
-    return redirect("/")
+    try:
+        session.clear()
+        logger.info('Session cleared successfully')
+        return jsonify({'message': 'Logged out'}), 200
+    except Exception as e:
+        logger.error(f"Error during logout: {e}")
+        return jsonify({'error': 'Logout failed'}), 500
 
 # Проверка авторизации
 @app.route('/api/auth/check', methods=['GET'])
