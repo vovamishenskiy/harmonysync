@@ -37,6 +37,27 @@ body {
   padding: 20px;
 }
 
+/* Лого и заголовок */
+.logo-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.logo-title svg {
+  width: 42px;
+  height: 42px;
+}
+
+.logo-title .main-title {
+  margin: 0;
+  font-weight: 500;
+}
+
 /* Стили для контейнера с задачами и календарем */
 .container {
   display: flex;
@@ -44,6 +65,7 @@ body {
   max-width: 1200px;
   gap: 20px;
   margin: 0 auto;
+  margin-top: 80px;
 }
 
 /* Стили для левого блока (задачи) */
