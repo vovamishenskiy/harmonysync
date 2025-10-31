@@ -88,8 +88,27 @@ body {
   -webkit-user-select: none;
   position: absolute;
   top: 10px;
-  right: 160px;
+  right: 10px;
 }
+
+/* Меню пользователя */
+.user-menu {
+  position: absolute;
+  right: 10px;
+  top: 55px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: start;
+  background-color: var(--bg-color);
+  padding: 10px 10px;
+  border-radius: 12px;
+  z-index: 999;
+  width: 213px;
+  border: 1px solid currentColor;
+}
+
+
 
 /* Стили для контейнера с задачами и календарем */
 .container {
@@ -568,29 +587,30 @@ body {
 
 /* выход */
 .logout-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #db4437;
-  color: white;
+  color: currentColor;
   border: none;
-  padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
-  transition: background-color 0.3s ease;
+  transition: background-color .3s ease;
+  background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  width: 139px;
 }
 
 .logout-button.light {
-  color: #333;
+  color: currentColor;
 }
 
 .logout-button.dark {
   color: #fff;
 }
 
-.logout-button:hover {
-  background-color: #c63d31;
+.logout-button svg {
+  fill: currentColor;
 }
 
 /* выполненные задачи */
@@ -648,27 +668,31 @@ body {
 }
 
 .theme-button {
-  position: absolute;
-  top: 10px;
-  right: 110px;
-  background-color: var(--bg-color-i);
   color: var(--text-color-i);
   border: none;
   font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color .3s ease;
-  width: 38px;
-  height: 38px;
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 6px;
+  background-color: transparent;
 }
 
 .theme-button svg {
   stroke: var(--text-color-i);
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+  transition: 0.4s ease all;
+}
+
+.theme-button span {
+  color: currentColor;
+  filter: invert(1);
+  transition: 0.4s ease all;
 }
 
 @media screen and (max-width: 370px) {
