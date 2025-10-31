@@ -69,6 +69,7 @@ function App() {
     setIsUserMenuOpen(false);
     try {
       await axios.get('/api/logout', { withCredentials: true });
+      setIsAuthenticated(false);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
