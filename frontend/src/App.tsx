@@ -65,6 +65,22 @@ function App() {
     window.location.href = '/login';
   };
 
+  const checkAuthentication = async () => {
+    setIsLoading(true);
+    try {
+      await axios.get('/api/auth/check', { withCredentials: true });
+      setIsAuthenticated(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Выход
   const handleLogout = async () => {
     try {
@@ -74,9 +90,14 @@ function App() {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      window.location.href = '/';
+      await checkAuthentication();
+      // window.location.href = '/';
     }
   };
+
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
 
   // Закрытие меню при клике вне
   useEffect(() => {
