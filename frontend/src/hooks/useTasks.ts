@@ -9,6 +9,8 @@ interface Task {
     due?: string;
     status: 'pending' | 'completed';
     list_id: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export const useTasks = (selectedTasklistId: string | null) => {
